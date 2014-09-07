@@ -8,25 +8,18 @@ insert into people
 )
 values
 
-(
-    'matt@tplus1.com',
-    'Matt Wilson',
-    crypt('abc123', gen_salt('md5')),
-    'confirmed',
-    false
-),
 
 (
     'rob@216software.com',
-    'Rob Heinen',
+    'Rob',
     crypt('abc123', gen_salt('md5')),
     'confirmed',
     false
 ),
 
 (
-    'leroy@216software.com',
-    'Leroy Jenkins',
+    'deborah.riemann@googlemail.com',
+    'Debby',
     crypt('abc123', gen_salt('md5')),
     'confirmed',
     false
