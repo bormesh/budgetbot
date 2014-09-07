@@ -1,0 +1,8 @@
+This is how to install a project based on budgetbot.  Pretend you're
+making a project named "wendy"::
+
+    $ unzip budgetbot.zip
+    $ find -name budgetbot | xargs rename 's/budgetbot/wendy/'
+    $ find -type f | xargs sed -i 's/budgetbot/wendy/g'
+
+.. vim: set syntax=rst:
