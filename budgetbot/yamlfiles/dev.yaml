@@ -1,0 +1,82 @@
+postgresql:
+    database:   budgetbot_dev
+    host:       localhost
+    port:       5432
+    user:       budgetbot
+    password:   budg3tb0t
+
+#rackspace cloud files login
+#https://mycloud.rackspace.com/
+# username: regulatorybinder
+# password: Tr@1lh3@d
+#
+# To create a tempurl, we need to set an account wide key.
+#
+# To get the url and token to set the key, issue the following command:
+# curl -v -H "X-Auth-User: regulatorybinder" -H "X-Auth-Key: 0a413fe7949f48d8485335024d7f795c" https://auth.api.rackspacecloud.com/v1.0
+# Then, using the X-Storage-Url value as well as the X-Storage-Token value, issue the following curl command:
+# curl -X POST -H "X-Auth-Token: 30e5ef8c7d3f4b5dae3d3d334a3ad50b" -H "X-Account-Meta-Temp-Url-Key: regbinderkey" https://storage101.ord1.clouddrive.com/v1/MossoCloudFS_32c1f785-b7a7-41e5-8a75-a0241445369c
+
+
+cloudfiles:
+    api-key:    c1267316d6b50c145facca34cb1cc0dd
+    username:   bormesh
+    temp-url-key:  hairyman
+    base-url: https://storage101.ord1.clouddrive.com/v1/MossoCloudFS_32c1f785-b7a7-41e5-8a75-a0241445369c
+    time-available: 60
+
+logging:
+
+    default: &defaultlogging
+
+        # This is the catch-all.
+        # root:
+        #     level: DEBUG
+        #     handlers: [console, tmpfile]
+
+        loggers:
+            budgetbot: &budgetbotlogging
+                propagate: False
+                level: DEBUG
+                handlers: [console, tmpfile]
+
+            werkzeug: *budgetbotlogging
+
+            horsemeat: *budgetbotlogging
+
+        disable_existing_loggers: false
+
+        version: 1
+
+        handlers:
+
+            console:
+                class: logging.StreamHandler
+                level: DEBUG
+                formatter: consolefmt
+
+            tmpfile:
+                class: logging.FileHandler
+                filename: /tmp/budgetbot.log
+                mode: a
+                level: DEBUG
+                formatter: consolefmt
+
+
+        formatters:
+            consolefmt:
+                format: '%(asctime)-22s [%(process)d] %(name)-30s %(lineno)-5d %(levelname)-8s %(message)s'
+
+    script: *defaultlogging
+
+app:
+    secret:                     2908 Coleridge
+    host:                       test.budgetbot.local
+    scheme:                     http
+    launch_debugger_on_error:   False
+    mode:                       dev
+
+smtp:
+    host:   localhost
+
+# vim: set filetype=yaml :
