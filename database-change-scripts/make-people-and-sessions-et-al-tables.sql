@@ -79,7 +79,7 @@ execute procedure set_updated_column();
 create table horsemeat_session_data
 (
     session_id integer not null
-    references budgetbot_sessions (session_id)
+    references horsemeat_sessions (session_id)
     on delete cascade
     on update cascade,
 

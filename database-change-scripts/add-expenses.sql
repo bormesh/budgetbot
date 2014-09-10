@@ -15,37 +15,70 @@ execute procedure set_updated_column();
 insert into expense_categories
 (title)
 values
-('office rent'),
-('hosting fees'),
-('cell phones'),
-('marketing stuff (biz cards, shirts, etc)'),
-('parking fees'),
-('meals'),
-('office supplies'),
-('contract work');
+('food - groceries'),
+('food - entertainment'),
+('entertainment'),
+('coffee'),
+('clothes'),
+('books'),
+('other'),
+('travel');
 
-create table vendors
+
+create table budgeted_expenses
 (
-    title citext primary key,
-    description text,
-    inserted timestamp not null default now(),
-    updated timestamp
+
+    budgeted_expense_id serial primary key,
+
+    expense_category citext not null references
+    expense_categories(title),
+
+    budgeted_amount decimal not null,
+
+    effective tstzrange not null
+    default tstzrange(now(), 'infinity'::timestamp with time zone)
 );
 
-insert into vendors
-(title)
-values
-('Micro Center'),
-('Pho and Rice'),
-('Linode'),
-('Rackspace'),
-('Sprint');
+alter table budgeted_expenses add constraint no_overlapping_budgeted_expenses
+exclude using gist (
+    cast (expense_category as text) with =,
+    effective with &&);
 
-create trigger vendors_set_updated_column
-before update
-on vendors
+-- When you insert a new budgeted category
+-- this one updates the tstzrange for
+-- the previous budget to be no longer effective.
+create or replace function set_budgeted_expenses_in_use ()
+returns trigger
+as
+$$
+
+begin
+
+update budgeted_expenses
+set effective = tstzrange(lower(effective), now())
+where now() <@ effective;
+return NEW;
+
+end;
+$$
+language plpgsql;
+
+create trigger budgeted_expenses_update_in_use
+before insert
+on budgeted_expenses
 for each row
-execute procedure set_updated_column();
+execute procedure set_budgeted_expenses_in_use();
+
+insert into budgeted_expenses
+(expense_category, budgeted_amount)
+values
+('food - groceries', 200),
+('food - entertainment', 200),
+('entertainment', 200),
+('coffee', 50),
+('clothes', 100),
+('other', 100);
+
 
 create table expenses
 (
@@ -53,33 +86,19 @@ create table expenses
 
     description text not null,
 
-    amount float not null,
+    amount float not null default 0.0,
+
+    budgeted_expense_id integer not null references
+    budgeted_expenses (budgeted_expense_id),
 
     -- This means what accounting month we should use.
     accounting_date date not null,
 
-    unique(description, amount, accounting_date),
-
     extra_notes text,
-
-    client_uuid uuid references clients (client_uuid)
-    on delete set null on update cascade,
-
-    project_uuid uuid references projects (project_uuid)
-    on delete set null on update cascade,
-
-    vendor citext references vendors (title)
-    on delete set null on update cascade,
-
-    category citext references expense_categories (title)
-    on delete set null on update cascade,
 
     -- Use this array to tell the database where to find related
     -- pictures of receipts, emailed PDFs, etc.
     attached_file_URLs citext[],
-
-    invoice_id integer references invoices (invoice_id)
-    on delete set null on update cascade,
 
     inserted timestamp not null default now(),
     updated timestamp

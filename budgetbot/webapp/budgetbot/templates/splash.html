@@ -1,0 +1,47 @@
+{% extends 'budgetbot/base.html' %}
+
+{% block title %}BudgetBot{% endblock %}
+
+{% block main %}
+
+<h1>Wendy</h1>
+
+{% include 'budgetbot/new-expense-form.html' %}
+
+{% endblock main %}
+
+{% block scripts %}
+<script type="text/javascript">
+
+var expense_categories = {{ fancyjsondumps(expense_categories)|safe }};
+var denormalized_clients_data = {{ fancyjsondumps(denormalized_clients)|safe }};
+var work_types_data = {{ fancyjsondumps(types_of_work)|safe }};
+
+var etvm = new ExpenseTrackViewModel({
+    projects: projects_data,
+    denormalized_clients: denormalized_clients_data,
+    work_types: work_types_data
+});
+
+$(document).ready(function () {
+
+    $("input.datepicker").datepicker({
+        format: 'yyyy-mm-dd',
+        todayBtn: true,
+        todayHighlight: true,
+        autoclose: true
+    }).datepicker("update", etvm.timesheet().date_worked());
+
+    ko.applyBindings(etvm);
+
+    $("select.selectpicker").selectpicker();
+
+    if(/Android|webOS|iPhone|iPad|iPod|BlackBerry/i.test(navigator.userAgent)) {
+        $('.selectpicker').selectpicker('mobile');
+    }
+
+});
+</script>
+{% endblock scripts %}
+
+{# vim: set syntax=htmldjango: #}

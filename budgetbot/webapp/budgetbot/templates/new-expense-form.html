@@ -1,0 +1,104 @@
+<div id="new-epxense-form">
+
+<div class="row">
+
+<!-- left column -->
+<div class="col-md-6">
+
+<h2>Enter an expense</h2>
+
+<div class="form-group">
+
+<label>
+Who's there?
+</label>
+
+<input type="email" name="email_address" class="form-control"
+    data-bind="value: email_address"
+    placeholder="matt@216software.com" />
+
+</div>
+
+<div class="form-group">
+<label>
+Expense Date
+</label>
+
+<input type="text" name="date_expense"
+    id="dt"
+    class="form-control datepicker"
+    data-bind="value: expenseform().date_expense" />
+</div>
+
+<div class="form-group">
+
+<label>
+Amount
+<small class="text-muted">(in $)</small>
+</label>
+
+<ul class="list-unstyled list-inline">
+
+<li>
+<button class="btn btn-danger btn-sm"
+    data-bind="click: function () { timesheet().amount(0); }"
+>
+Clear
+</button>
+</li>
+
+</ul>
+
+<input type="text" name="amount"
+    class="form-control"
+    data-bind="value: timesheet().amount" />
+<div class="form-group">
+
+<label>
+Expense Category
+</label>
+
+<br />
+
+<select class="selectpicker"
+    data-width="100%"
+    data-bind="foreach: budget_category">
+
+<option data-bind="text: expense_category, value: budget_category_id"></option>
+</optgroup>
+</select>
+
+</div>
+
+<label>Extra notes</label>
+
+<textarea class="form-control"
+    rows="8"
+    data-bind="value: timesheet().extra_notes"></textarea>
+
+</div>
+
+<button
+    class="btn btn-primary btn-lg"
+    data-bind="click: insert,
+        css: {disabled: is_saving}"
+>
+
+Add Expense
+</button>
+
+</div><!-- closes first col-md-6 -->
+
+<div class="col-md-6">
+
+<h2>JSON I will send</h2>
+<pre data-bind="text: ko.toJSON(insert_data, null, 4)"></pre>
+
+<h2>Response from server</h2>
+<pre data-bind="text: ko.toJSON(server_reply, null, 4)"></pre>
+
+</div><!-- closes second col-md-6 -->
+
+</div><!-- closes class="row" -->
+
+</div><!-- id="expense-tracking-form" -->
