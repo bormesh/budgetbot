@@ -90,50 +90,6 @@ class UserInserter(object):
         return cursor.fetchone()
 
 
-class LockOutPeople(object):
-
-    def __init__(self, lockout_interval):
-        self.lockout_interval = lockout_interval
-
-    def lock_out_inactive(self, pgconn):
-
-        cursor = pgconn.cursor()
-
-        cursor.execute(textwrap.dedent("""
-            update people
-                set person_status = 'deactivated'
-                where person_status <> 'deactivated' AND person_id in (
-                    select person_id
-                    from horsemeat_sessions
-                    group by person_id
-                    having current_timestamp - max(inserted) > interval %(interval)s
-            )
-            """), {
-                'interval': self.lockout_interval
-
-            })
-
-        return cursor.rowcount
-
-    def get_all_inactive_users(self, pgconn):
-
-        cursor = pgconn.cursor()
-
-        cursor.execute(textwrap.dedent("""
-            select hmpl.person_id, max(hmpl.inserted), p.display_name,p.email_address
-                    from horsemeat_sessions hmpl
-                    join people p on hmpl.person_id = p.person_id
-                    group by hmpl.person_id, p.display_name, p.email_address
-                    having current_timestamp - max(hmpl.inserted) > interval %(interval)s
-            """), {
-                'interval': self.lockout_interval
-
-            })
-
-        return cursor
-
-
-
 class PasswordUpdater(object):
 
     """
@@ -219,7 +175,7 @@ class PersonFactory(psycopg2.extras.CompositeCaster):
 class Person(object):
 
     def __init__(self, person_id, email_address, salted_hashed_password,
-        person_status, display_name, is_superuser, is_institution_superuser, did_acknowledge_eula, challenge_question, challenge_question_answer, date_password_changed, inserted, updated):
+        person_status, display_name, is_superuser, inserted, updated):
 
         self.person_id = person_id
         self.email_address = email_address
@@ -227,11 +183,6 @@ class Person(object):
         self.person_status = person_status
         self.display_name = display_name
         self.is_superuser = is_superuser
-        self.is_institution_superuser = is_institution_superuser
-        self.did_acknowledge_eula = did_acknowledge_eula
-        self.challenge_question = challenge_question
-        self.challenge_question_answer = challenge_question_answer
-        self.date_password_changed=date_password_changed
         self.inserted = inserted
         self.updated = updated
 
@@ -264,59 +215,6 @@ class Person(object):
             raise KeyError("Sorry, couldn't find {0}!".format(
                 email_address))
 
-    @classmethod
-    def all_colleagues_everywhere(cls, pgconn, person_id):
-
-        """
-        Return all the people we can find at any institution (aka
-        client) affiliated with this person_id.
-        """
-
-        cursor = pgconn.cursor()
-
-        cursor.execute(textwrap.dedent("""
-            select distinct (p.*)::people as p
-
-            from people_clients_link pcl1
-
-            join people_clients_link pcl2
-            on pcl1.client_uuid = pcl2.client_uuid
-
-            join people p
-            on pcl2.person_id = p.person_id
-
-            where pcl1.person_id = %(person_id)s
-            """), {'person_id': person_id})
-
-        return cursor
-
-    def all_my_colleagues(self, pgconn):
-
-        return self.all_colleagues_everywhere(pgconn, self.person_id)
-
-
-    def all_my_internal_clients(self, pgconn):
-
-        """
-        Return all the clients where the person
-        is in the 'internal' associated with this person.
-        """
-        cursor = pgconn.cursor()
-
-        cursor.execute(textwrap.dedent("""
-            select c.client_uuid, c.display_name
-
-            from clients c
-
-            join people_clients_link pcl
-            on pcl.client_uuid = c.client_uuid
-
-            where person_id = %(person_id)s
-        """), {'person_id': self.person_id})
-
-        return cursor.fetchall()
-
-
 
     @property
     def __jsondata__(self):
@@ -326,45 +224,6 @@ class Person(object):
                 'display_name',
                 'email_address',
                 'person_id'])}
-
-    @classmethod
-    def all_binder_members(cls, pgconn, binder_id):
-
-        cursor = pgconn.cursor()
-
-        cursor.execute(textwrap.dedent("""
-
-          select pcl2.person_id,
-                 p.display_name,
-                 (case when b.owner_id = pcl2.person_id
-                  then 'primary coordinator'
-                  else bul.user_link_type end) as user_link_type
-
-          from people_clients_link pcl2
-
-          join (select b.binder_id, pcl.client_uuid
-              from binders b
-
-              join people p
-              on p.person_id = b.owner_id
-
-              join people_clients_link pcl
-              on pcl.person_id = p.person_id
-
-              where  b.binder_id = %(binder_id)s) pcl3
-          on pcl3.client_uuid = pcl2.client_uuid
-
-          join people p on p.person_id = pcl2.person_id
-
-          left join binder_user_link bul
-          on bul.person_id = pcl2.person_id
-          and pcl3.binder_id = bul.binder_id
-
-          join binders b on pcl3.binder_id = b.binder_id
-
-          """), {'binder_id': binder_id})
-
-        return cursor
 
     @classmethod
     def by_person_id(cls, pgconn, person_id):
@@ -379,6 +238,21 @@ class Person(object):
 
         if cursor.rowcount:
             return cursor.fetchone().p
+
+    @classmethod
+    def get_all(cls, pgconn):
+
+        cursor = pgconn.cursor()
+
+        cursor.execute(textwrap.dedent("""
+            select (p.*)::people as person
+            from people p
+            order by p.inserted
+
+        """))
+
+        if cursor.rowcount:
+            return [row.person for row in cursor.fetchall()]
 
 
 def get_candidate_read_only_users(pgconn, person_id, binder_id):

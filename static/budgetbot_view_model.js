@@ -67,35 +67,24 @@ function verify_not_blank (val) {
 
 };
 
-function TimeSheet (data) {
+function Expense (data) {
 
     var self = this;
 
-    self.workerbee_id = ko.observable(data.workerbee_id);
-    self.project_uuid = ko.observable(data.project_uuid);
-    self.date_worked = ko.observable();
+    self.person_id = ko.observable(data.person_id);
+    self.date_expense = ko.observable();
+    self.amount = ko.observable(data.amount);
 
-    if (data.date_worked) {
-        self.date_worked(new moment(data.date_worked));
+    if (data.date_expense) {
+        self.date_expense(new moment(data.date_expense));
     } else {
-        self.date_worked(new moment().format("YYYY-MM-DD"));
+        self.date_expense(new moment().format("YYYY-MM-DD"));
     }
 
-    self.interval_worked = ko.observable(data.interval_worked || 0);
-    self.work_type = ko.observable(data.work_type);
-    self.billable = ko.observable(data.billable);
     self.extra_notes = ko.observable(data.extra_notes);
     self.inserted = ko.observable(data.inserted);
     self.updated = ko.observable(data.updated);
     self.is_saving = ko.observable(false);
-
-    self.hours_worked = ko.computed(function () {
-        return Math.floor(self.interval_worked() / 60);
-    });
-
-    self.modulo_minutes_worked = ko.computed(function () {
-        return self.interval_worked() % 60;
-    });
 
     self.html_extra_notes = ko.computed(function () {
 
@@ -115,6 +104,17 @@ function TimeSheet (data) {
             extra_notes: self.extra_notes()
         };
     };
+};
+
+function ExpenseCategory(data)
+{
+    var self = this;
+
+    self.title = ko.observable();
+    self.description = ko.observable(data.description);
+
+    self.inserted = ko.observable(data.inserted);
+    self.updated = ko.observable(data.updated);
 };
 
 function Invoice(data) {
@@ -242,16 +242,13 @@ function ExpenseTrackViewModel (data) {
         verify_function: verify_not_blank
     });
 
-    self.password = ko.observable();
-    self.expense = ko.observable(new Expense(data));
-
     /*
     self.denormalized_clients = ko.observableArray(ko.utils.arrayMap(
         data.denormalized_clients,
         function (dcl) {
             return new DenormalizedClient(dcl);
         }));
-    */
+
 
     self.expense_categories = ko.observableArray(ko.utils.arrayMap(
         data.expense_categories,
@@ -265,12 +262,24 @@ function ExpenseTrackViewModel (data) {
             return new WorkType(wt);
         }));
 
+    */
+
+    self.budget_categories = ko.observableArray(['One', 'Two', 'Three'])
+
+    self.expense = ko.observable(new Expense({'amount':0}));
+
+    self.people = ko.observableArray(
+        ko.utils.arrayMap(
+            data.people,
+            function (w) {
+                return new Person(w);
+            }));
+
+
     self.insert_data = ko.computed(function () {
 
         return {
             email_address: self.email_address(),
-            password: self.password(),
-            timesheet: self.timesheet()
         };
 
     });
@@ -295,7 +304,7 @@ function ExpenseTrackViewModel (data) {
 
             $.ajax({
 
-                url: "/insert-timesheet",
+                url: "/insert-expense",
                 type: "POST",
                 dataType: "json",
                 contentType: "application/json; charset=utf-8",

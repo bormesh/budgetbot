@@ -31,9 +31,19 @@ class ConfigWrapper(configwrapper.ConfigWrapper):
     def register_composite_types(self, pgconn):
 
         from budgetbot.pg.user import PersonFactory
+        from budgetbot.pg.expenses import ExpenseCategoryFactory, \
+                                         ExpenseFactory
 
         psycopg2.extras.register_composite('people', pgconn,
           factory=PersonFactory)
+
+        psycopg2.extras.register_composite('expenses', pgconn,
+          factory=ExpenseFactory)
+
+        psycopg2.extras.register_composite('expense_categories', pgconn,
+          factory=ExpenseCategoryFactory)
+
+
 
         log.info('Just registered composite types in psycopg2')
 

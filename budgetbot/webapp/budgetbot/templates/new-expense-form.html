@@ -13,11 +13,14 @@
 Who's there?
 </label>
 
-<input type="email" name="email_address" class="form-control"
-    data-bind="value: email_address"
-    placeholder="matt@216software.com" />
+<select class="selectpicker"
+    data-width="100%"
+    data-bind="foreach: people, value:expense().person_id">
 
-</div>
+<option data-bind="text:display_name, value:person_id"></option>
+</select>
+
+</div> <!-- ends div class="form-group" -->
 
 <div class="form-group">
 <label>
@@ -27,33 +30,31 @@ Expense Date
 <input type="text" name="date_expense"
     id="dt"
     class="form-control datepicker"
-    data-bind="value: expenseform().date_expense" />
+    data-bind="value: expense().date_expense" />
 </div>
 
 <div class="form-group">
-
 <label>
 Amount
 <small class="text-muted">(in $)</small>
 </label>
 
+<input type="text" name="amount"
+    class="form-control"
+    data-bind="money: expense().amount()" />
 <ul class="list-unstyled list-inline">
-
 <li>
 <button class="btn btn-danger btn-sm"
-    data-bind="click: function () { timesheet().amount(0); }"
+    data-bind="click: function () { expense().amount(0); }"
 >
 Clear
 </button>
 </li>
 
 </ul>
+</div>
 
-<input type="text" name="amount"
-    class="form-control"
-    data-bind="value: timesheet().amount" />
 <div class="form-group">
-
 <label>
 Expense Category
 </label>
@@ -62,19 +63,19 @@ Expense Category
 
 <select class="selectpicker"
     data-width="100%"
-    data-bind="foreach: budget_category">
+    data-bind="foreach: expense_categories">
 
-<option data-bind="text: expense_category, value: budget_category_id"></option>
-</optgroup>
+<option data-bind="text: title, value:title "></option>
 </select>
 
 </div>
 
+<div class="form-group">
 <label>Extra notes</label>
 
 <textarea class="form-control"
     rows="8"
-    data-bind="value: timesheet().extra_notes"></textarea>
+    data-bind="value: expense().extra_notes"></textarea>
 
 </div>
 
@@ -83,7 +84,6 @@ Expense Category
     data-bind="click: insert,
         css: {disabled: is_saving}"
 >
-
 Add Expense
 </button>
 

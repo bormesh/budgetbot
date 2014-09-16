@@ -15,9 +15,9 @@ module_template_prefix = 'mockups'
 module_template_package = 'budgetbot.webapp.mockups.templates'
 
 
-class Splash(Handler):
+class SplashMockup(Handler):
 
-    route_strings = set(['GET /'])
+    route_strings = set(['GET /mockup/splash'])
 
     route = Handler.check_route_strings
 
