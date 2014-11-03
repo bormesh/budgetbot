@@ -1,0 +1,9 @@
+.*.swp
+*.pyc
+.vagrant
+.~lock*
+*.egg-info
+test.yaml
+.coverage
+dev.yaml
+static/bower_components
