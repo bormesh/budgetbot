@@ -75,6 +75,8 @@ function Expense (data) {
     self.date_expense = ko.observable();
     self.amount = ko.observable(data.amount);
 
+    self.expense_category = ko.observable(data.expense_category);
+
     if (data.date_expense) {
         self.date_expense(new moment(data.date_expense));
     } else {
@@ -96,11 +98,10 @@ function Expense (data) {
 
     self.toJSON = function () {
         return {
-            project_uuid: self.project_uuid(),
-            date_worked: self.date_worked(),
-            interval_worked: self.interval_worked(),
-            work_type: self.work_type(),
-            billable: self.billable(),
+            expense_category: self.expense_category(),
+            date_expense: self.date_expense(),
+            person_id: self.person_id(),
+            amount: self.amount(),
             extra_notes: self.extra_notes()
         };
     };
@@ -116,72 +117,6 @@ function ExpenseCategory(data)
     self.inserted = ko.observable(data.inserted);
     self.updated = ko.observable(data.updated);
 };
-
-function Invoice(data) {
-
-    var self = this;
-
-    self.invoice_id= ko.observable(data.invoice_id);
-    self.notes_to_client = ko.observable(data.notes_to_client);
-    self.amount = ko.observable(data.amount);
-    self.paid = ko.observable(data.paid);
-    self.client_uuid = ko.observable(data.client_uuid);
-    self.inserted = ko.observable();
-
-    self.paid_css_class = ko.computed(function () {
-        return self.paid() ? 'text-success' : 'text-danger';
-    });
-
-    if (data.inserted) {
-        self.inserted(new moment(data.inserted).format("YYYY-MM-DD"));
-    } else {
-        self.inserted(new moment().format("YYYY-MM-DD"));
-    }
-
-    self.updated = ko.observable(data.updated);
-    self.is_saving = ko.observable(false);
-
-    self.html_notes_to_client = ko.computed(function () {
-
-        if (self.notes_to_client()) {
-            return self.notes_to_client().split("\n").join("<br />");
-        }
-
-    });
-
-    self.paid_click_update = function(){
-
-        self.is_saving(true);
-
-        $.ajax({
-
-            type:'POST',
-            url:'/invoice-update-paid',
-            dataType:'json',
-            contentType: "application/json; charset=utf-8",
-            processData: false,
-            data: ko.toJSON({ 'invoice_id':self.invoice_id(),
-                    'paid':self.paid()}),
-            success: function (data) {
-                    self.is_saving(false);
-                }
-        });
-
-        return true;
-
-    };
-
-    self.toJSON = function () {
-        return {
-            invoice_id: self.invoice(),
-            client_uuid: self.client_uuid(),
-            paid: self.paid(),
-            amount: self.amount(),
-            notes_to_client: self.notes_to_client()
-        };
-    };
-};
-
 
 
 function Project (data) {
@@ -238,10 +173,6 @@ function ExpenseTrackViewModel (data) {
 
     var self = this;
 
-    self.email_address = ko.observable().extend({
-        verify_function: verify_not_blank
-    });
-
     /*
     self.denormalized_clients = ko.observableArray(ko.utils.arrayMap(
         data.denormalized_clients,
@@ -264,8 +195,6 @@ function ExpenseTrackViewModel (data) {
 
     */
 
-    self.budget_categories = ko.observableArray(['One', 'Two', 'Three'])
-
     self.expense = ko.observable(new Expense({'amount':0}));
 
     self.people = ko.observableArray(
@@ -279,7 +208,6 @@ function ExpenseTrackViewModel (data) {
     self.insert_data = ko.computed(function () {
 
         return {
-            email_address: self.email_address(),
         };
 
     });
@@ -309,11 +237,19 @@ function ExpenseTrackViewModel (data) {
                 dataType: "json",
                 contentType: "application/json; charset=utf-8",
                 processData: false,
-                data: ko.toJSON(self.insert_data()),
+                data: ko.toJSON(self.expense()),
 
                 success: function (data) {
                     self.server_reply(data);
+
+                    self.expense().amount(0);
+                    self.expense().extra_notes('');
                     self.is_saving(false);
+                },
+
+                failure: function(data)
+                {
+                    alert("failure!")
                 }
             });
 

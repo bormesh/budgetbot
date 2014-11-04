@@ -5,6 +5,7 @@
 <!-- left column -->
 <div class="col-md-6">
 
+<form role="form">
 <h2>Enter an expense</h2>
 
 <div class="form-group">
@@ -39,9 +40,9 @@ Amount
 <small class="text-muted">(in $)</small>
 </label>
 
-<input type="text" name="amount"
+<input type="number" name="amount"
     class="form-control"
-    data-bind="money: expense().amount()" />
+    data-bind="value:expense().amount" />
 <ul class="list-unstyled list-inline">
 <li>
 <button class="btn btn-danger btn-sm"
@@ -63,9 +64,10 @@ Expense Category
 
 <select class="selectpicker"
     data-width="100%"
-    data-bind="foreach: expense_categories">
+    data-bind="options: expense_categories,
+               optionsText: 'title',
+               value:expense().expense_category">
 
-<option data-bind="text: title, value:title "></option>
 </select>
 
 </div>
@@ -86,7 +88,7 @@ Expense Category
 >
 Add Expense
 </button>
-
+</form>
 </div><!-- closes first col-md-6 -->
 
 <div class="col-md-6">

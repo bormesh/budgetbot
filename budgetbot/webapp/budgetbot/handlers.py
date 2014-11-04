@@ -12,7 +12,7 @@ log = logging.getLogger(__name__)
 module_template_prefix = 'budgetbot'
 module_template_package = 'budgetbot.webapp.budgetbot.templates'
 
-__all__ = ['Splash']
+__all__ = ['Splash', 'InsertExpense']
 
 class Splash(Handler):
 
@@ -30,18 +30,58 @@ class Splash(Handler):
                              people=people,
                              expense_categories=expense_categories)
 
-class ExpenseInputPage(Handler):
+class InsertExpense(Handler):
 
-    route_strings = set(['GET /enter-expense'])
+    route_strings = set(['POST /insert-expense'])
     route = Handler.check_route_strings
 
     def handle(self, req):
 
-        people = user.Person.get_all(self.cw.get_pgconn())
+        log.info("adding expense new")
 
-        expense_categories = ['one', 'two', 'three']
+        if not req.json:
+            return Response.json({'status':'error'})
 
-        return Response.tmpl('budgetbot/new-expense-form.html',
-                             people=people,
-                             expense_categories=expense_categories)
+        log.info("req json is {0}".format(req.json))
+
+        self.insert_expense(req.json['person_id'],
+                            req.json['amount'],
+                            req.json['date_expense'],
+                            req.json['expense_category']['title'],
+                            req.json['extra_notes'])
+
+        return Response.json({'status':'success'})
+
+    def insert_expense(self, person_id, amount, expense_date,
+                       expense_category, extra_notes=None):
+
+        log.info("inserting new expense")
+
+        pgconn = self.cw.get_pgconn()
+
+        cursor = pgconn.cursor()
+
+        cursor.execute("""
+
+            insert into expenses
+
+            (person_id, amount, expense_date, expense_category,
+             extra_notes)
+
+            values
+
+            ( %(person_id)s, %(amount)s,
+              %(expense_date)s, %(expense_category)s,
+              %(extra_notes)s)
+
+        """, {'person_id':person_id, 'amount':amount,
+               'expense_date':expense_date,
+               'expense_category':expense_category,
+               'extra_notes':extra_notes})
+
+
+        return cursor.rowcount
+
+
+
 
