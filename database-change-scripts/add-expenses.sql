@@ -84,15 +84,16 @@ create table expenses
 (
     expense_uuid uuid primary key default uuid_generate_v4(),
 
-    description text not null,
-
     amount float not null default 0.0,
 
-    budgeted_expense_id integer not null references
-    budgeted_expenses (budgeted_expense_id),
+    expense_category citext not null references
+    expense_categories (title),
+
+    person_id integer not null
+    references people (person_id),
 
     -- This means what accounting month we should use.
-    accounting_date date not null,
+    expense_date date not null,
 
     extra_notes text,
 
