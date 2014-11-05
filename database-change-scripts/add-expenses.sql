@@ -15,9 +15,9 @@ execute procedure set_updated_column();
 insert into expense_categories
 (title)
 values
-('food - groceries'),
-('food - entertainment'),
-('entertainment'),
+('groceries'),
+('going out'),
+('entertainment')
 ('coffee'),
 ('clothes'),
 ('books'),
@@ -33,10 +33,10 @@ create table budgeted_expenses
     expense_category citext not null references
     expense_categories(title),
 
-    budgeted_amount decimal not null,
+    budgeted_amount float not null,
 
     effective tstzrange not null
-    default tstzrange(now(), 'infinity'::timestamp with time zone)
+    default tstzrange(now(), now() + interval '30 days')
 );
 
 alter table budgeted_expenses add constraint no_overlapping_budgeted_expenses
@@ -56,7 +56,8 @@ begin
 
 update budgeted_expenses
 set effective = tstzrange(lower(effective), now())
-where now() <@ effective;
+where now() <@ effective
+and expense_category = NEW.expense_category;
 return NEW;
 
 end;
@@ -72,8 +73,8 @@ execute procedure set_budgeted_expenses_in_use();
 insert into budgeted_expenses
 (expense_category, budgeted_amount)
 values
-('food - groceries', 200),
-('food - entertainment', 200),
+('groceries', 200),
+('going out', 200),
 ('entertainment', 200),
 ('coffee', 50),
 ('clothes', 100),

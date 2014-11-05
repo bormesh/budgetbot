@@ -4,8 +4,6 @@
 
 {% block main %}
 
-<h1>BudgetBot</h1>
-
 {% include 'budgetbot/new-expense-form.html' %}
 
 {% endblock main %}
@@ -13,11 +11,13 @@
 {% block scripts %}
 <script type="text/javascript">
 
-var expense_categories = {{ fancyjsondumps(expense_categories)|safe }};
+var expense_categories_denormal = {{ fancyjsondumps(
+                                     expense_categories_denormal)|safe }};
 var people = {{ fancyjsondumps(people)|safe }};
+
 var etvm = new ExpenseTrackViewModel({
     people: people,
-    expense_categories: expense_categories,
+    expense_categories_denormal: expense_categories_denormal,
 });
 
 $(document).ready(function () {

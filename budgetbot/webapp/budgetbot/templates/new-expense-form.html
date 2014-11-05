@@ -33,25 +33,25 @@ Expense Date
     class="form-control datepicker"
     data-bind="value: expense().date_expense" />
 </div>
-
 <div class="form-group">
 <label>
 Amount
 <small class="text-muted">(in $)</small>
 </label>
-
+<div class="input-group">
+<span class="input-group-addon">$</span>
 <input type="number" name="amount"
     class="form-control"
     data-bind="value:expense().amount" />
+</div>
+</div>
+<div class="form-group">
 <ul class="list-unstyled list-inline">
 <li>
 <button class="btn btn-danger btn-sm"
     data-bind="click: function () { expense().amount(0); }"
->
-Clear
-</button>
+>Clear</button>
 </li>
-
 </ul>
 </div>
 
@@ -59,24 +59,31 @@ Clear
 <label>
 Expense Category
 </label>
-
-<br />
-
 <select class="selectpicker"
     data-width="100%"
-    data-bind="options: expense_categories,
-               optionsText: 'title',
-               value:expense().expense_category">
+    data-bind="options: expense_categories_denormal(),
+               optionsText: function(item)
+                    { return item.expense_category.title()  },
+               value:expense().expense_category_denorm">
 
 </select>
 
+
+<div style="background-color:#E2DCEC; width:100%; height:20px; border-radius:5px">
+<div style="background-color:#472873; height:20px; border-radius:5px" data-bind="style: { width: expense().expense_category_denorm().amount_spent_percentage() }"></div>
 </div>
+<h4>
+$<span data-bind="text:expense().expense_category_denorm().amount_spent()"></span> /
+$<span data-bind="text:expense().expense_category_denorm().budgeted_amount()">
+</span></h4>
+</div>
+
 
 <div class="form-group">
 <label>Extra notes</label>
 
 <textarea class="form-control"
-    rows="8"
+    rows="3"
     data-bind="value: expense().extra_notes"></textarea>
 
 </div>
@@ -93,11 +100,31 @@ Add Expense
 
 <div class="col-md-6">
 
-<h2>JSON I will send</h2>
-<pre data-bind="text: ko.toJSON(insert_data, null, 4)"></pre>
+<table class="table table-striped">
+<thead><tr>
+    <th>Category</th>
+    <th>Amount Spent</th>
+    <th>Budgeted Amount</th>
+</tr>
+</thead>
+<tfoot><tr>
+<th>Total ($)</th>
+<th>$<span data-bind="text:total_spent_amount"></span></th>
+<th>$<span data-bind="text:total_budgeted_amount"></span></th>
+</tr></tfoot>
 
-<h2>Response from server</h2>
-<pre data-bind="text: ko.toJSON(server_reply, null, 4)"></pre>
+<tbody data-bind="foreach:expense_categories_denormal">
+
+<tr>
+  <td data-bind="text:expense_category.title()"></td>
+  <td data-bind="style: {color : parseInt(amount_spent()) > budgeted_amount() ? 'red' : 'black'}">
+  $<span data-bind="text:amount_spent()">
+  </span></td>
+  <td> $<span data-bind="text:budgeted_amount()"></span></td>
+</tr>
+
+</tbody>
+</table>
 
 </div><!-- closes second col-md-6 -->
 

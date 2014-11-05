@@ -75,7 +75,7 @@ function Expense (data) {
     self.date_expense = ko.observable();
     self.amount = ko.observable(data.amount);
 
-    self.expense_category = ko.observable(data.expense_category);
+    self.expense_category_denorm = ko.observable(data.expense_category);
 
     if (data.date_expense) {
         self.date_expense(new moment(data.date_expense));
@@ -98,7 +98,8 @@ function Expense (data) {
 
     self.toJSON = function () {
         return {
-            expense_category: self.expense_category(),
+            expense_category:
+                self.expense_category_denorm().expense_category.title(),
             date_expense: self.date_expense(),
             person_id: self.person_id(),
             amount: self.amount(),
@@ -111,13 +112,49 @@ function ExpenseCategory(data)
 {
     var self = this;
 
-    self.title = ko.observable();
+    self.title = ko.observable(data.title);
     self.description = ko.observable(data.description);
 
     self.inserted = ko.observable(data.inserted);
     self.updated = ko.observable(data.updated);
+
 };
 
+function DenormalizedExpenseCategory(data)
+{
+    var self = this;
+
+
+    self.expense_category = new ExpenseCategory(data.expense_category)
+
+    self.amount_spent = ko.observable(0);
+    if(data.amount_spent != null)
+    {
+       self.amount_spent(data.amount_spent);
+    }
+
+    self.budgeted_amount = ko.observable(data.budgeted_amount);
+
+    self.amount_spent_percentage = ko.computed(function (){
+
+        if (self.budgeted_amount() == 0)
+        {
+           return "0%";
+        }
+        var perc =  (self.amount_spent() / self.budgeted_amount()) * 100;
+        /* nothing over 100% */
+        if (perc > 100)
+        {
+           perc = 100;
+        }
+        return perc + '%';
+    });
+
+
+    self.start_date =ko.observable(new moment(data.effective.lower));
+    self.end_date = ko.observable(new moment(data.effective.upper));
+
+}
 
 function Project (data) {
 
@@ -133,7 +170,6 @@ function Project (data) {
 };
 
 function Client (data) {
-
     var self = this;
 
     self.client_uuid = ko.observable(data.client_uuid);
@@ -142,22 +178,18 @@ function Client (data) {
     self.current_status = ko.observable(data.current_status);
     self.inserted = ko.observable(data.inserted);
     self.updated = ko.observable(data.updated);
-
 };
 
 function WorkType (data) {
-
     var self = this;
 
     self.title = ko.observable(data.title);
     self.description = ko.observable(data.description);
     self.inserted = ko.observable(data.inserted);
     self.updated = ko.observable(data.updated);
-
 };
 
 function DenormalizedClient (data) {
-
     var self = this;
     self.client = ko.observable(new Client(data.client));
 
@@ -166,11 +198,9 @@ function DenormalizedClient (data) {
         function (p) {
             return new Project(p);
         }));
-
 };
 
 function ExpenseTrackViewModel (data) {
-
     var self = this;
 
     /*
@@ -194,8 +224,37 @@ function ExpenseTrackViewModel (data) {
         }));
 
     */
-
     self.expense = ko.observable(new Expense({'amount':0}));
+
+    self.expense_categories_denormal = ko.observableArray(ko.utils.arrayMap(
+        data.expense_categories_denormal,
+        function (p) {
+            return new DenormalizedExpenseCategory(p);
+    }));
+
+    self.total_budgeted_amount = ko.computed( function() {
+         var total_budgeted_amount = 0;
+         for(var i=0; i < self.expense_categories_denormal().length; i++)
+         {
+            total_budgeted_amount +=
+                self.expense_categories_denormal()[i].budgeted_amount();
+         }
+         return total_budgeted_amount;
+    });
+
+    self.total_spent_amount = ko.computed( function() {
+         var total_spent_amount = 0;
+         for(var i=0; i < self.expense_categories_denormal().length; i++)
+         {
+            total_spent_amount +=
+                parseInt(self.expense_categories_denormal()[i].amount_spent());
+         }
+         return total_spent_amount;
+    });
+
+
+
+
 
     self.people = ko.observableArray(
         ko.utils.arrayMap(
@@ -204,12 +263,8 @@ function ExpenseTrackViewModel (data) {
                 return new Person(w);
             }));
 
-
     self.insert_data = ko.computed(function () {
-
-        return {
-        };
-
+        return {  };
     });
 
     self.is_saving = ko.observable(false);
@@ -241,6 +296,13 @@ function ExpenseTrackViewModel (data) {
 
                 success: function (data) {
                     self.server_reply(data);
+
+                    var new_amount_spent = (
+                    parseInt(self.expense().amount()) +
+                self.expense().expense_category_denorm().amount_spent());
+
+                    console.log(new_amount_spent);
+                    self.expense().expense_category_denorm().amount_spent(new_amount_spent);
 
                     self.expense().amount(0);
                     self.expense().extra_notes('');
@@ -390,6 +452,14 @@ function Person (data) {
     self.person_id = data.person_id;
 
 };
+
+function BudgetedExpense (data) {
+
+    var self = this;
+    self.expense_category = ko.observable(data.expense_category);
+};
+
+
 
 function DenormalizedTimeSheet (data) {
 

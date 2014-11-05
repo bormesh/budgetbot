@@ -32,6 +32,7 @@ class ConfigWrapper(configwrapper.ConfigWrapper):
 
         from budgetbot.pg.user import PersonFactory
         from budgetbot.pg.expenses import ExpenseCategoryFactory, \
+                                          ExpenseCategoriesDenormalizedFactory, \
                                          ExpenseFactory
 
         psycopg2.extras.register_composite('people', pgconn,
@@ -42,6 +43,10 @@ class ConfigWrapper(configwrapper.ConfigWrapper):
 
         psycopg2.extras.register_composite('expense_categories', pgconn,
           factory=ExpenseCategoryFactory)
+
+        psycopg2.extras.register_composite('expense_categories_denormalized', pgconn,
+          factory=ExpenseCategoriesDenormalizedFactory)
+
 
 
 

@@ -9,3 +9,4 @@ script_order:
 -   make-people-and-sessions-et-al-tables.sql
 -   insert-test-users.sql
 -   add-expenses.sql
+-   add-expense-denormalized-view.sql

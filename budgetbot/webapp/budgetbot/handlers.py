@@ -22,13 +22,14 @@ class Splash(Handler):
     def handle(self, req):
         people = user.Person.get_all(self.cw.get_pgconn())
 
-        expense_categories = expenses.ExpenseCategories. \
-            get_all(self.cw.get_pgconn())
+        expense_categories_denormal = expenses.\
+            ExpenseCategoriesDenormalized. \
+            get_all_with_budgets(self.cw.get_pgconn())
 
-        log.debug('{0}'.format(expense_categories))
         return Response.tmpl('budgetbot/splash.html',
                              people=people,
-                             expense_categories=expense_categories)
+                             expense_categories_denormal\
+                             =expense_categories_denormal)
 
 class InsertExpense(Handler):
 
@@ -47,15 +48,13 @@ class InsertExpense(Handler):
         self.insert_expense(req.json['person_id'],
                             req.json['amount'],
                             req.json['date_expense'],
-                            req.json['expense_category']['title'],
+                            req.json['expense_category'],
                             req.json['extra_notes'])
 
         return Response.json({'status':'success'})
 
     def insert_expense(self, person_id, amount, expense_date,
                        expense_category, extra_notes=None):
-
-        log.info("inserting new expense")
 
         pgconn = self.cw.get_pgconn()
 

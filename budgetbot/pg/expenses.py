@@ -53,6 +53,49 @@ class ExpenseFactory(psycopg2.extras.CompositeCaster):
         return Expense(**d)
 
 
+class ExpenseCategoriesDenormalizedFactory(psycopg2.extras.CompositeCaster):
+
+    def make(self, values):
+        d = dict(zip(self.attnames, values))
+        return ExpenseCategoriesDenormalized(**d)
+
+class ExpenseCategoriesDenormalized(object):
+
+    def __init__(self, expense_category, budgeted_amount,
+                       effective, amount_spent):
+
+        self.expense_category = expense_category
+        self.budgeted_amount = budgeted_amount
+        self.effective = effective
+        self.amount_spent = amount_spent
+
+    @classmethod
+    def get_all_with_budgets(cls, pgconn):
+
+        cursor = pgconn.cursor()
+
+        cursor.execute(textwrap.dedent("""
+
+            select (ecd.*)::expense_categories_denormalized
+                   from expense_categories_denormalized ecd
+                   where now() <@ ecd.effective
+
+        """))
+
+        if cursor.rowcount:
+            return [row.ecd for row in cursor.fetchall()]
+
+    @property
+    def __jsondata__(self):
+
+        return {k:v for (k, v) in self.__dict__.items()
+            if k in set([
+                'expense_category',
+                'budgeted_amount',
+                'effective',
+                'amount_spent'])}
+
+
 
 class ExpenseCategories(object):
 
