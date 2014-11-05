@@ -17,7 +17,7 @@ insert into expense_categories
 values
 ('groceries'),
 ('going out'),
-('entertainment')
+('entertainment'),
 ('coffee'),
 ('clothes'),
 ('books'),
