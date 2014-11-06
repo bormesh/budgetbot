@@ -38,6 +38,18 @@
     };
 })();
 
+function display_news_message (message, alert_level) {
+
+    if (alert_level == "alert-info") {
+        toastr.info(message);
+    } else if (alert_level == "alert-success") {
+        toastr.success(message);
+    } else if (alert_level == "alert-danger") {
+        toastr.error(message);
+    } else if (alert_level == "alert-warning") {
+        toastr.warning(message);
+    }
+};
 
 ko.extenders.completion_status = function (target, options) {
 
@@ -307,6 +319,7 @@ function ExpenseTrackViewModel (data) {
                     self.expense().amount(0);
                     self.expense().extra_notes('');
                     self.is_saving(false);
+                    display_news_message('Expense added!','alert-success')
                 },
 
                 failure: function(data)
@@ -552,4 +565,6 @@ function DenormalizedInvoice (data) {
 
 
 };
+
+
 
