@@ -49,7 +49,7 @@ class InsertExpense(Handler):
                             req.json['amount'],
                             req.json['date_expense'],
                             req.json['expense_category'],
-                            req.json['extra_notes'])
+                            req.json.get('extra_notes'))
 
         return Response.json({'status':'success'})
 
