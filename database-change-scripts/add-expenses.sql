@@ -15,14 +15,15 @@ execute procedure set_updated_column();
 insert into expense_categories
 (title)
 values
+('rob lunch'),
+('debby lunch'),
+('going out dinner'),
 ('groceries'),
-('going out'),
 ('entertainment'),
-('coffee'),
-('clothes'),
-('books'),
-('other'),
-('travel');
+('fuel'),
+('travel'),
+('shopping'),
+('other');
 
 
 create table budgeted_expenses
@@ -73,13 +74,16 @@ execute procedure set_budgeted_expenses_in_use();
 insert into budgeted_expenses
 (expense_category, budgeted_amount)
 values
-('groceries', 200),
-('going out', 200),
-('entertainment', 200),
-('coffee', 50),
-('clothes', 100),
-('other', 100);
 
+('rob lunch', 180),
+('debby lunch', 60),
+('going out dinner', 240),
+('groceries', 450),
+('entertainment', 100),
+('fuel', 150),
+('travel', 200),
+('shopping', 250),
+('other', 50);
 
 create table expenses
 (
