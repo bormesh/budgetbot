@@ -287,6 +287,22 @@ function ExpenseTrackViewModel (data) {
 
     self.server_reply = ko.observable(null);
 
+    self.add_expense_button_enabled = ko.computed(function(){
+
+         if (self.is_saving())
+         {
+            return true;
+         }
+         else if(parseInt(self.expense().amount()) <= 0)
+         {
+            return true;
+         }
+         else
+         {
+            return false;
+         }
+    });
+
     self.insert = function () {
 
         if (!self.form_is_ready()) {
