@@ -1,0 +1,4 @@
+
+
+- Monthly email detailing spending in each budget
+  and which budgets were good and which were bad
