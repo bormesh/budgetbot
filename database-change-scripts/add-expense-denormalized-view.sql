@@ -12,7 +12,7 @@ select (ec.*)::expense_categories as expense_category,
                    left join expenses as e
                    on e.expense_category = ec.title
 
-
+                   where now() <@ be.effective
 
                    group by (ec.*),
                    be.budgeted_amount, be.effective;
