@@ -26,8 +26,6 @@ class Splash(Handler):
             ExpenseCategoriesDenormalized. \
             get_all_with_budgets(self.cw.get_pgconn())
 
-        import ipdb; ipdb.set_trace()
-
         return Response.tmpl('budgetbot/splash.html',
                              people=people,
                              expense_categories_denormal\
