@@ -31,7 +31,7 @@ Expense Date
 <input type="text" name="date_expense"
     id="dt"
     class="form-control datepicker"
-    data-bind="value: expense().date_expense" />
+    data-bind="value: expense().expense_date" />
 </div>
 <div class="form-group">
 <label>
@@ -70,7 +70,7 @@ Expense Category
 
 
 <div style="background-color:#E2DCEC; width:100%; height:20px; border-radius:5px">
-<div style="background-color:#472873; height:20px; border-radius:5px" data-bind="style: { width: expense().expense_category_denorm().amount_spent_percentage() }"></div>
+<div style="background-color:#472873; height:20px; border-radius:5px" data-bind="style: { width: expense().expense_category_denorm().amount_spent_percentage(), color:'red' }"></div>
 </div>
 <h4>
 $<span data-bind="text:expense().expense_category_denorm().amount_spent()"></span> /
@@ -125,6 +125,32 @@ Add Expense
 
 </tbody>
 </table>
+
+<div data-bind="foreach:expense_categories_denormal">
+<h4>Category: <span data-bind="text:expense_category.title"></span></h4>
+
+<table class="table" data-bind="visible:expenses().length >= 1">
+    <thead><tr>
+        <th>Date</th>
+        <th>Amount</th>
+        <th>Notes</th>
+        <th>Delete</th>
+    </tr>
+    </thead>
+    <tbody data-bind="foreach:expenses">
+    <tr>
+     <td data-bind="text:expense_date().format('L')"></td>
+     <td> $<span data-bind="text:amount"></span></td>
+     <td><span data-bind="text:extra_notes"></span></td>
+     <td><button class="btn btn-primary">Delete</button>
+    </tr>
+    </tbody>
+</table>
+
+</div>
+
+<! -- list all expenses down here .. then we can worry about editing -->
+<
 
 </div><!-- closes second col-md-6 -->
 

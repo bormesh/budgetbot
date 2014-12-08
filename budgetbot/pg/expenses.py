@@ -10,15 +10,17 @@ log = logging.getLogger(__name__)
 class Expenses(object):
 
     def __init__(self, expense_uuid,
-        description, amount, accounting_date, budgeted_expnse_id,
-        inserted, updated):
+        amount, expense_date, attached_file_urls,
+        expense_category, extra_notes,
+        person_id, inserted, updated):
 
         self.expense_uuid = expense_uuid
-        self.description = description
+        self.expense_date = expense_date
         self.amount = amount
-        self.accounting_date = accounting_date
-
-        self.budged_expense_id = budgeted_expense_id
+        self.extra_notes = extra_notes
+        self.expense_category = expense_category
+        self.attached_file_urls = attached_file_urls
+        self.person_id = person_id
         self.inserted = inserted
         self.updated = updated
 
@@ -29,6 +31,19 @@ class Expenses(object):
             self.expense_uuid,
             self.amount,
             id(self))
+    @property
+    def __jsondata__(self):
+
+        return {k:v for (k, v) in self.__dict__.items()
+            if k in set([
+                'expense_uuid',
+                'expense_date',
+                'amount',
+                'extra_notes',
+                'expense_category',
+                'self.person_id'])}
+
+
 
     @classmethod
     def get_all(cls, pgconn):
@@ -50,7 +65,7 @@ class ExpenseFactory(psycopg2.extras.CompositeCaster):
 
     def make(self, values):
         d = dict(zip(self.attnames, values))
-        return Expense(**d)
+        return Expenses(**d)
 
 
 class ExpenseCategoriesDenormalizedFactory(psycopg2.extras.CompositeCaster):
@@ -62,12 +77,13 @@ class ExpenseCategoriesDenormalizedFactory(psycopg2.extras.CompositeCaster):
 class ExpenseCategoriesDenormalized(object):
 
     def __init__(self, expense_category, budgeted_amount,
-                       effective, amount_spent):
+                       effective, amount_spent, expenses):
 
         self.expense_category = expense_category
         self.budgeted_amount = budgeted_amount
         self.effective = effective
         self.amount_spent = amount_spent
+        self.expenses = expenses
 
     @classmethod
     def get_all_with_budgets(cls, pgconn):
@@ -93,7 +109,8 @@ class ExpenseCategoriesDenormalized(object):
                 'expense_category',
                 'budgeted_amount',
                 'effective',
-                'amount_spent'])}
+                'amount_spent',
+                'expenses'])}
 
 
 
