@@ -78,7 +78,7 @@ class ExpenseCategoriesDenormalized(object):
 
             select (ecd.*)::expense_categories_denormalized
                    from expense_categories_denormalized ecd
-                   where now() <@ ecd.effective
+                   where now()::date <@ ecd.effective
 
         """))
 
@@ -182,7 +182,7 @@ class BudgetedExpenses(object):
 
             from budgeted_expenses be
 
-            where now() <@ be.effective
+            where now()::date <@ be.effective
 
             order by be.expense_category
         """))

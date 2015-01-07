@@ -37,7 +37,7 @@ create table budgeted_expenses
     budgeted_amount float not null,
 
     effective tstzrange not null
-    default tstzrange(now(), now() + interval '30 days')
+    default daterange(now()::date, (now()::date + interval '30 days')::date)
 );
 
 alter table budgeted_expenses add constraint no_overlapping_budgeted_expenses
