@@ -26,6 +26,7 @@ class Splash(Handler):
             ExpenseCategoriesDenormalized. \
             get_all_with_budgets(self.cw.get_pgconn())
 
+
         return Response.tmpl('budgetbot/splash.html',
                              people=people,
                              expense_categories_denormal\
@@ -47,7 +48,7 @@ class InsertExpense(Handler):
 
         self.insert_expense(req.json['person_id'],
                             req.json['amount'],
-                            req.json['date_expense'],
+                            req.json['expense_date'],
                             req.json['expense_category'],
                             req.json.get('extra_notes'))
 
