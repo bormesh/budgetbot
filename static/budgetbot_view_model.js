@@ -84,15 +84,15 @@ function Expense (data) {
     var self = this;
 
     self.person_id = ko.observable(data.person_id);
-    self.date_expense = ko.observable();
+    self.expense_date = ko.observable();
     self.amount = ko.observable(data.amount);
 
     self.expense_category_denorm = ko.observable(data.expense_category);
 
-    if (data.date_expense) {
-        self.date_expense(new moment(data.date_expense));
+    if (data.expense_date) {
+        self.expense_date(new moment(data.expense_date));
     } else {
-        self.date_expense(new moment().format("YYYY-MM-DD"));
+        self.expense_date(new moment().format("YYYY-MM-DD"));
     }
 
     self.extra_notes = ko.observable(data.extra_notes);
@@ -112,7 +112,7 @@ function Expense (data) {
         return {
             expense_category:
                 self.expense_category_denorm().expense_category.title(),
-            date_expense: self.date_expense(),
+            expense_date: self.expense_date(),
             person_id: self.person_id(),
             amount: self.amount(),
             extra_notes: self.extra_notes()
@@ -136,16 +136,27 @@ function DenormalizedExpenseCategory(data)
 {
     var self = this;
 
-
     self.expense_category = new ExpenseCategory(data.expense_category)
-
     self.amount_spent = ko.observable(0);
+
     if(data.amount_spent != null)
     {
        self.amount_spent(data.amount_spent);
     }
 
     self.budgeted_amount = ko.observable(data.budgeted_amount);
+
+    if (data.expenses.length > 0 && data.expenses[0] != null){
+
+        self.expenses = ko.observableArray(ko.utils.arrayMap(
+            data.expenses,
+            function (e) {
+                return new Expense(e);
+            }));
+    }
+    else{
+        self.expenses = ko.observableArray();
+    }
 
     self.amount_spent_percentage = ko.computed(function (){
 
@@ -160,6 +171,11 @@ function DenormalizedExpenseCategory(data)
            perc = 100;
         }
         return perc + '%';
+    });
+
+    self.amount_spent_color = ko.computed(function ()
+    {
+       return 'green';
     });
 
 
@@ -201,44 +217,14 @@ function WorkType (data) {
     self.updated = ko.observable(data.updated);
 };
 
-function DenormalizedClient (data) {
-    var self = this;
-    self.client = ko.observable(new Client(data.client));
-
-    self.projects = ko.observableArray(ko.utils.arrayMap(
-        data.projects,
-        function (p) {
-            return new Project(p);
-        }));
-};
 
 function ExpenseTrackViewModel (data) {
     var self = this;
 
-    /*
-    self.denormalized_clients = ko.observableArray(ko.utils.arrayMap(
-        data.denormalized_clients,
-        function (dcl) {
-            return new DenormalizedClient(dcl);
-        }));
-
-
-    self.expense_categories = ko.observableArray(ko.utils.arrayMap(
-        data.expense_categories,
-        function (p) {
-            return new ExpenseCategory(p);
-        }));
-
-    self.work_types = ko.observableArray(ko.utils.arrayMap(
-        data.work_types,
-        function (wt) {
-            return new WorkType(wt);
-        }));
-
-    */
     self.expense = ko.observable(new Expense({'amount':0}));
 
-    self.expense_categories_denormal = ko.observableArray(ko.utils.arrayMap(
+    self.expense_categories_denormal = ko.observableArray(
+        ko.utils.arrayMap(
         data.expense_categories_denormal,
         function (p) {
             return new DenormalizedExpenseCategory(p);
