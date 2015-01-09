@@ -1,6 +1,7 @@
 #vim: set expandtab ts=4 sw=4 filetype=python:
 
 import logging
+import textwrap
 
 from budgetbot.webapp.framework.handler import Handler
 from budgetbot.webapp.framework.response import Response
@@ -42,17 +43,18 @@ class InsertExpense(Handler):
         log.info("adding expense new")
 
         if not req.json:
-            return Response.json({'status':'error'})
+            return Response.json({'success':'false'})
 
         log.info("req json is {0}".format(req.json))
 
-        self.insert_expense(req.json['person_id'],
+        expense_uuid = self.insert_expense(req.json['person_id'],
                             req.json['amount'],
                             req.json['expense_date'],
                             req.json['expense_category'],
                             req.json.get('extra_notes'))
 
-        return Response.json({'status':'success'})
+        return Response.json({'success':'true',
+                              'data':{'expense_uuid':expense_uuid}})
 
     def insert_expense(self, person_id, amount, expense_date,
                        expense_category, extra_notes=None):
@@ -74,14 +76,42 @@ class InsertExpense(Handler):
               %(expense_date)s, %(expense_category)s,
               %(extra_notes)s)
 
+            returning expense_uuid
+
         """, {'person_id':person_id, 'amount':amount,
                'expense_date':expense_date,
                'expense_category':expense_category,
                'extra_notes':extra_notes})
 
 
-        return cursor.rowcount
+        return cursor.fetchone().expense_uuid
 
+
+class DeleteExpense(Handler):
+
+    route_strings = set(['POST /delete-expense'])
+    route = Handler.check_route_strings
+
+    def handle(self, req):
+
+        log.info("adding expense new")
+
+        if not req.json:
+            return Response.json({'success':'false'})
+
+        log.info("req json is {0}".format(req.json))
+
+        cursor = self.cw.get_pgconn().cursor()
+
+        cursor.execute(textwrap.dedent("""
+
+            delete from expenses
+
+            where expense_uuid = %(expense_uuid)s
+
+        """),{'expense_uuid':req.json['expense_uuid']})
+
+        return Response.json({'success':'true'})
 
 
 

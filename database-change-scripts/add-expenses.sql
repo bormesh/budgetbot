@@ -36,7 +36,7 @@ create table budgeted_expenses
 
     budgeted_amount float not null,
 
-    effective tstzrange not null
+    effective daterange not null
     default daterange(now()::date, (now()::date + interval '30 days')::date)
 );
 
@@ -56,8 +56,8 @@ $$
 begin
 
 update budgeted_expenses
-set effective = tstzrange(lower(effective), now())
-where now() <@ effective
+set effective = daterange(lower(effective), now()::date)
+where now()::date <@ effective
 and expense_category = NEW.expense_category;
 return NEW;
 

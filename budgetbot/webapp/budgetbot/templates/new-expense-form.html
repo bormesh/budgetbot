@@ -64,17 +64,17 @@ Expense Category
     data-bind="options: expense_categories_denormal(),
                optionsText: function(item)
                     { return item.expense_category.title()  },
-               value:expense().expense_category_denorm">
+               value:selected_expense_category_from_select">
 
 </select>
 
 
 <div style="background-color:#E2DCEC; width:100%; height:20px; border-radius:5px">
-<div style="background-color:#472873; height:20px; border-radius:5px" data-bind="style: { width: expense().expense_category_denorm().amount_spent_percentage(), color:'red' }"></div>
+<div style="background-color:#472873; height:20px; border-radius:5px" data-bind="style: { width: selected_expense_category_from_select().amount_spent_percentage(), color:'red' }"></div>
 </div>
 <h4>
-$<span data-bind="text:expense().expense_category_denorm().amount_spent()"></span> /
-$<span data-bind="text:expense().expense_category_denorm().budgeted_amount()">
+$<span data-bind="text:selected_expense_category_from_select().amount_spent()"></span> /
+$<span data-bind="text:selected_expense_category_from_select().budgeted_amount()">
 </span></h4>
 </div>
 
@@ -105,12 +105,14 @@ Add Expense
     <th>Category</th>
     <th>Amount Spent</th>
     <th>Budgeted Amount</th>
+    <th>Deets</th>
 </tr>
 </thead>
 <tfoot><tr>
 <th>Total ($)</th>
 <th>$<span data-bind="text:total_spent_amount"></span></th>
 <th>$<span data-bind="text:total_budgeted_amount"></span></th>
+<th></th>
 </tr></tfoot>
 
 <tbody data-bind="foreach:expense_categories_denormal">
@@ -121,15 +123,17 @@ Add Expense
   $<span data-bind="text:amount_spent()">
   </span></td>
   <td> $<span data-bind="text:budgeted_amount()"></span></td>
+  <td><button class="btn btn-sm" data-bind="click:$parent.select_category">+
+      </button>
 </tr>
 
 </tbody>
 </table>
 
 <div data-bind="foreach:expense_categories_denormal">
-<h4>Category: <span data-bind="text:expense_category.title"></span></h4>
-
-<table class="table" data-bind="visible:expenses().length >= 1">
+<a name="deets"></a>
+<table class="table" data-bind="visible:$data == $parent.selected_expense_category()">
+    <caption data-bind="text:expense_category.title()"></caption>
     <thead><tr>
         <th>Date</th>
         <th>Amount</th>
@@ -139,10 +143,11 @@ Add Expense
     </thead>
     <tbody data-bind="foreach:expenses">
     <tr>
-     <td data-bind="text:expense_date().format('L')"></td>
+     <td data-bind="moment: expense_date(), format: 'YYYY-MM-DD'"></td>
      <td> $<span data-bind="text:amount"></span></td>
      <td><span data-bind="text:extra_notes"></span></td>
-     <td><button class="btn btn-primary">Delete</button>
+     <td><button class="btn btn-primary" data-bind="click:$parent.delete_expense">Delete
+     </button></td>
     </tr>
     </tbody>
 </table>
@@ -150,7 +155,6 @@ Add Expense
 </div>
 
 <! -- list all expenses down here .. then we can worry about editing -->
-<
 
 </div><!-- closes second col-md-6 -->
 
