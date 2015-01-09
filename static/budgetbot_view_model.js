@@ -38,6 +38,20 @@
     };
 })();
 
+
+/* Borrowed this from: https://gist.github.com/tommck/6174395
+   Now I can display date strings as moment strings with */
+ko.bindingHandlers.moment = {
+    update: function (element, valueAccessor, allBindingsAccessor, viewModel) {
+        var val = valueAccessor();
+        var date = moment(ko.utils.unwrapObservable(val));
+
+        var format = allBindingsAccessor().format || 'MM/DD/YYYY';
+        element.innerText = date.format(format);
+    }
+};
+
+
 function display_news_message (message, alert_level) {
 
     if (alert_level == "alert-info") {
@@ -87,7 +101,9 @@ function Expense (data) {
     self.expense_date = ko.observable();
     self.amount = ko.observable(data.amount);
 
-    self.expense_category_denorm = ko.observable(data.expense_category);
+    self.expense_uuid = ko.observable(data.expense_uuid);
+
+    self.expense_category = ko.observable(data.expense_category);
 
     if (data.expense_date) {
         self.expense_date(new moment(data.expense_date));
@@ -111,8 +127,9 @@ function Expense (data) {
     self.toJSON = function () {
         return {
             expense_category:
-                self.expense_category_denorm().expense_category.title(),
+                self.expense_category(),
             expense_date: self.expense_date(),
+            expense_uuid: self.expense_uuid(),
             person_id: self.person_id(),
             amount: self.amount(),
             extra_notes: self.extra_notes()
@@ -146,17 +163,52 @@ function DenormalizedExpenseCategory(data)
 
     self.budgeted_amount = ko.observable(data.budgeted_amount);
 
+    self.expenses = ko.observableArray();
+
+    self.delete_expense = function(expense) {
+
+        $.ajax({
+            url:"/delete-expense",
+            type: "POST",
+            dataType:"json",
+            contentType: "application/json; charset=utf-8",
+            processData: false,
+            data: ko.toJSON(expense),
+
+            success: function (data) {
+                // Recaculate new totals
+                console.log(data);
+
+                var new_amount_spent = (
+                self.amount_spent() -
+                    parseInt(expense.amount()));
+
+                self.amount_spent(new_amount_spent);
+                self.expenses.remove(expense);
+                display_news_message('Expense deleted!','alert-success')
+            },
+
+            failure: function(data)
+            {
+                alert("failure!")
+            }
+
+
+        });
+
+
+    }
+
+
     if (data.expenses.length > 0 && data.expenses[0] != null){
 
-        self.expenses = ko.observableArray(ko.utils.arrayMap(
+        self.expenses(ko.utils.arrayMap(
             data.expenses,
             function (e) {
                 return new Expense(e);
             }));
     }
-    else{
-        self.expenses = ko.observableArray();
-    }
+
 
     self.amount_spent_percentage = ko.computed(function (){
 
@@ -197,26 +249,6 @@ function Project (data) {
 
 };
 
-function Client (data) {
-    var self = this;
-
-    self.client_uuid = ko.observable(data.client_uuid);
-    self.title = ko.observable(data.title);
-    self.description = ko.observable(data.description);
-    self.current_status = ko.observable(data.current_status);
-    self.inserted = ko.observable(data.inserted);
-    self.updated = ko.observable(data.updated);
-};
-
-function WorkType (data) {
-    var self = this;
-
-    self.title = ko.observable(data.title);
-    self.description = ko.observable(data.description);
-    self.inserted = ko.observable(data.inserted);
-    self.updated = ko.observable(data.updated);
-};
-
 
 function ExpenseTrackViewModel (data) {
     var self = this;
@@ -229,6 +261,22 @@ function ExpenseTrackViewModel (data) {
         function (p) {
             return new DenormalizedExpenseCategory(p);
     }));
+
+    self.selected_expense_category = ko.observable();
+
+    self.select_category = function(category)
+    {
+      self.selected_expense_category(category);
+      //skip down to the deets section of the page
+      location.href = '#deets';
+    }
+
+    self.selected_expense_category_from_select = ko.observable();
+
+    self.selected_expense_category_from_select.subscribe(function(newValue) {
+        self.expense().expense_category(newValue.expense_category.title());
+    });
+
 
     self.total_budgeted_amount = ko.computed( function() {
          var total_budgeted_amount = 0;
@@ -249,9 +297,6 @@ function ExpenseTrackViewModel (data) {
          }
          return total_spent_amount;
     });
-
-
-
 
 
     self.people = ko.observableArray(
@@ -290,15 +335,13 @@ function ExpenseTrackViewModel (data) {
     });
 
     self.insert = function () {
-
         if (!self.form_is_ready()) {
             alert("OH NOES");
         }
-
         else {
 
+            console.log(ko.toJSON(self.expense()))
             self.is_saving(true);
-
             $.ajax({
 
                 url: "/insert-expense",
@@ -306,20 +349,28 @@ function ExpenseTrackViewModel (data) {
                 dataType: "json",
                 contentType: "application/json; charset=utf-8",
                 processData: false,
+
                 data: ko.toJSON(self.expense()),
 
                 success: function (data) {
                     self.server_reply(data);
 
+                    //make sure we give this a uuid
+                    var expense_uuid = data['data']['expense_uuid'];
+                    self.expense().expense_uuid(expense_uuid);
+
                     var new_amount_spent = (
                     parseInt(self.expense().amount()) +
-                self.expense().expense_category_denorm().amount_spent());
+                        self.selected_expense_category_from_select().amount_spent());
 
-                    console.log(new_amount_spent);
-                    self.expense().expense_category_denorm().amount_spent(new_amount_spent);
+                    self.selected_expense_category_from_select().amount_spent(new_amount_spent);
 
-                    self.expense().amount(0);
-                    self.expense().extra_notes('');
+                    self.selected_expense_category_from_select().expenses.unshift(self.expense());
+
+                    self.expense(new Expense({'amount':0,
+                                 'expense_category':self.expense().expense_category()}));
+
+                    //self.expense().extra_notes('');
                     self.is_saving(false);
                     display_news_message('Expense added!','alert-success')
                 },
@@ -329,9 +380,7 @@ function ExpenseTrackViewModel (data) {
                     alert("failure!")
                 }
             });
-
         }
-
     };
 
     self.add_to_localStorage = function () {

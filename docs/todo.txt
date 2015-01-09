@@ -1,4 +1,10 @@
 
+- Delete works for each expense -- Add confirmation button
+  or some such idea so that we don't accidentally delete
+
+- Screen to create categories
+
+- Report Screen for past months / categories
 
 - Monthly email detailing spending in each budget
   and which budgets were good and which were bad
