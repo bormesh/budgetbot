@@ -39,6 +39,97 @@
 })();
 
 
+/* Sort column by column headers and types.
+
+   Check out this jsFiddle http://jsfiddle.net/brendonparker/6S85t/
+
+   Use it like this
+   <th data-bind="sort: { arr: Records, prop: 'Name' }">Name</th>
+*/
+
+
+
+ko.bindingHandlers.sort = {
+    init: function(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
+        var asc = false;
+        element.style.cursor = 'pointer';
+
+        element.onclick = function(){
+            var value = valueAccessor();
+            var prop = value.prop;
+            var data = value.arr;
+
+            asc = !asc;
+
+            data.sort(function(left, right){
+                var rec1 = left;
+                var rec2 = right;
+
+                if(!asc) {
+                    rec1 = right;
+                    rec2 = left;
+                }
+
+                var props = prop.split('.');
+                for(var i in props){
+                    var propName = props[i];
+                    var parenIndex = propName.indexOf('()');
+                    if(parenIndex > 0){
+                        propName = propName.substring(0, parenIndex);
+                        rec1 = rec1[propName]();
+                        rec2 = rec2[propName]();
+                    } else {
+                        rec1 = rec1[propName];
+                        rec2 = rec2[propName];
+                    }
+                }
+
+                return rec1 == rec2 ? 0 : rec1 < rec2 ? -1 : 1;
+            });
+        };
+    }
+};
+
+ko.bindingHandlers.sort_desc = {
+    init: function(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
+        var asc = false;
+        element.style.cursor = 'pointer';
+
+        element.onclick = function(){
+            var value = valueAccessor();
+            var prop = value.prop;
+            var data = value.arr;
+
+            data.sort(function(left, right){
+                var rec1 = left;
+                var rec2 = right;
+
+                if(!asc) {
+                    rec1 = right;
+                    rec2 = left;
+                }
+
+                var props = prop.split('.');
+                for(var i in props){
+                    var propName = props[i];
+                    var parenIndex = propName.indexOf('()');
+                    if(parenIndex > 0){
+                        propName = propName.substring(0, parenIndex);
+                        rec1 = rec1[propName]();
+                        rec2 = rec2[propName]();
+                    } else {
+                        rec1 = rec1[propName];
+                        rec2 = rec2[propName];
+                    }
+                }
+
+                return rec1 == rec2 ? 0 : rec1 < rec2 ? -1 : 1;
+            });
+        };
+    }
+};
+
+
 /* Borrowed this from: https://gist.github.com/tommck/6174395
    Now I can display date strings as moment strings with */
 ko.bindingHandlers.moment = {
@@ -359,6 +450,10 @@ function ExpenseTrackViewModel (data) {
                     var expense_uuid = data['data']['expense_uuid'];
                     self.expense().expense_uuid(expense_uuid);
 
+                    /* Make our expense a moment */
+                    self.expense().expense_date(new moment(self.expense().expense_date()));
+
+                    // Then sort I guess?
                     var new_amount_spent = (
                     parseInt(self.expense().amount()) +
                         self.selected_expense_category_from_select().amount_spent());

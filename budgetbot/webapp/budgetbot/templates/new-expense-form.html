@@ -123,8 +123,10 @@ Add Expense
   $<span data-bind="text:amount_spent()">
   </span></td>
   <td> $<span data-bind="text:budgeted_amount()"></span></td>
-  <td><button class="btn btn-sm" data-bind="click:$parent.select_category">+
-      </button>
+  <td><button class="btn btn-sm"
+              data-bind="click:$parent.select_category,
+                       sort_desc: { arr: expenses, prop: 'expense_date()'}">
+      +</button>
 </tr>
 
 </tbody>
@@ -135,15 +137,17 @@ Add Expense
 <table class="table" data-bind="visible:$data == $parent.selected_expense_category()">
     <caption data-bind="text:expense_category.title()"></caption>
     <thead><tr>
-        <th>Date</th>
-        <th>Amount</th>
+        <th data-bind="sort: { arr: expenses, prop: 'expense_date()'}">
+        Date</th>
+        <th data-bind="sort: { arr: expenses, prop: 'amount()'}">Amount
+        </th>
         <th>Notes</th>
         <th>Delete</th>
     </tr>
     </thead>
     <tbody data-bind="foreach:expenses">
     <tr>
-     <td data-bind="moment: expense_date(), format: 'YYYY-MM-DD'"></td>
+     <td data-bind="moment: expense_date(), format: 'MM-DD-YYYY'"></td>
      <td> $<span data-bind="text:amount"></span></td>
      <td><span data-bind="text:extra_notes"></span></td>
      <td><button class="btn btn-primary" data-bind="click:$parent.delete_expense">Delete
