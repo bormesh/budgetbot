@@ -4,8 +4,30 @@
 
 {% block main %}
 
-<h1>splash page</h1>
+<h1 data-bind="text:title"></h1>
 
 {% endblock main %}
+
+{% block scripts %}
+<script type="text/javascript">
+
+function BusTrackModel(data){
+    var self = this;
+
+    self.title = ko.observable('Hello');
+}
+
+
+var btm = new BusTrackModel({
+});
+
+$(document).ready(function () {
+
+    ko.applyBindings(etvm);
+
+});
+</script>
+{% endblock scripts %}
+
 
 {# vim: set syntax=htmldjango: #}

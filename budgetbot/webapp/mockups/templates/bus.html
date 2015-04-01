@@ -1,0 +1,122 @@
+{% extends 'budgetbot/base.html' %}
+
+{% block title %}splash page{% endblock %}
+
+{% block main %}
+
+<a class="btn btn-sm" data-bind="click:get_from_home_times">refresh</a>
+
+<h3>From Home -> Downtown </h3>
+<table class="table">
+<tr>
+<th>Destination</th>
+<th>Predicated</th>
+<th>Scheduled</th>
+</tr>
+<tbody data-bind="foreach:from_home_downtown">
+<tr>
+  <td data-bind="text:destination"></td>
+  <td data-bind="text:prettyPred"></td>
+  <td data-bind="text:prettySched"></td>
+</tr>
+</tbody>
+</table>
+
+
+<h3>From Home -> East</h3>
+<table class="table">
+<tr>
+<th>Destination</th>
+<th>Predicated</th>
+<th>Scheduled</th>
+</tr>
+<tbody data-bind="foreach:from_home_east">
+<tr>
+  <td data-bind="text:destination"></td>
+  <td data-bind="text:prettyPred"></td>
+  <td data-bind="text:prettySched"></td>
+</tr>
+</tbody>
+</table>
+
+<h2>From Station</h2>
+
+{% endblock main %}
+
+{% block scripts %}
+<script type="text/javascript">
+
+function Stop(data)
+{
+    var self = this;
+
+    self.destination = ko.observable(data.destination);
+
+    self.schedTime = ko.observable(data.schedTime);
+    self.schedPeriod = ko.observable(data.schedPeriod);
+
+    self.predTime = ko.observable(data.predTime);
+    self.predPeriod = ko.observable(data.predPeriod);
+
+    self.prettyPred = ko.computed(function() {
+         return self.predTime() + self.predPeriod();
+    });
+    self.prettySched = ko.computed(function() {
+         return self.schedTime() + self.schedPeriod();
+    });
+
+
+}
+
+function BusTrackModel(data){
+    var self = this;
+
+    self.from_home_downtown = ko.observableArray();
+    self.from_home_east = ko.observableArray();
+
+
+    self.from_station = ko.observableArray();
+
+    self.get_from_home_times = function() {
+
+        console.log('getting from home times');
+
+        $.ajax({
+
+            url:"/bus-times",
+            type: "GET",
+            dataType: "json",
+            contentType: "application/json; charset=utf-8",
+            processData: false,
+
+            success: function(data) {
+
+                self.from_home_east(ko.utils.arrayMap(
+                        data.homeeast,
+                        function (s) {
+                            return new Stop(s);
+                        }));
+
+                self.from_home_downtown(ko.utils.arrayMap(
+                        data.homedowntown,
+                        function (s) {
+                            return new Stop(s);
+                        }));
+
+            },
+        })};
+}
+
+
+var btm = new BusTrackModel({});
+
+$(document).ready(function () {
+    ko.applyBindings(btm);
+
+    btm.get_from_home_times();
+});
+</script>
+{% endblock scripts %}
+
+
+{# vim: set syntax=htmldjango: #}
