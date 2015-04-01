@@ -16,6 +16,7 @@ setup(
 
     scripts=[
         'budgetbot/scripts/run-dev-webapp',
+        'budgetbot/scripts/run-prod-webapp',
     ],
 
 )
