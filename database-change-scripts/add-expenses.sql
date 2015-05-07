@@ -38,6 +38,9 @@ create table budgeted_expenses
 
     effective daterange not null
     default daterange(now()::date, (now()::date + interval '30 days')::date)
+
+    inserted timestamp not null default now(),
+    updated timestamp
 );
 
 alter table budgeted_expenses add constraint no_overlapping_budgeted_expenses
@@ -70,6 +73,12 @@ before insert
 on budgeted_expenses
 for each row
 execute procedure set_budgeted_expenses_in_use();
+
+create trigger budgeted_expenses_set_updated_column
+before update
+on budgeted_expenses
+for each row
+execute procedure set_updated_column();
 
 insert into budgeted_expenses
 (expense_category, budgeted_amount)
