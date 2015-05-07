@@ -147,7 +147,7 @@ Add Expense
     </thead>
     <tbody data-bind="foreach:expenses">
     <tr>
-     <td data-bind="moment: expense_date(), format: 'MM-DD-YYYY'"></td>
+     <td data-bind="moment: expense_date(), format: 'MM-DD'"></td>
      <td> $<span data-bind="text:amount"></span></td>
      <td><span data-bind="text:extra_notes"></span></td>
      <td><button class="btn btn-primary" data-bind="click:$parent.delete_expense">Delete
