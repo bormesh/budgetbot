@@ -138,7 +138,7 @@ ko.bindingHandlers.moment = {
         var date = moment(ko.utils.unwrapObservable(val));
 
         var format = allBindingsAccessor().format || 'MM/DD/YYYY';
-        element.innerText = date.format(format);
+        element.innerHTML = date.format(format);
     }
 };
 
