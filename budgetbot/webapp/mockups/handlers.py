@@ -42,11 +42,17 @@ class BusTimesJSON(Handler):
 
         homeeast = response.json()['d']['stops'][0]['crossings']
 
+        log.debug(response.json())
+
 
         response = requests.post(
             'http://nextconnect.riderta.com/Arrivals.aspx/getStopTimes',
             data = '{"routeID": "103","directionID":"3","stopID":"9405", "useArrivalTimes":"false"}',
             headers={'Content-Type': ' application/json'})
+
+        log.debug(response.json())
+
+        # It's possible for crossings to be null
 
         [homeeast.append(x) for x in \
              response.json()['d']['stops'][0]['crossings']]
