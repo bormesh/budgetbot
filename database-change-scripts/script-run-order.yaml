@@ -10,3 +10,4 @@ script_order:
 -   insert-test-users.sql
 -   add-expenses.sql
 -   add-expense-denormalized-view.sql
+-   add-shopping-list.sql
