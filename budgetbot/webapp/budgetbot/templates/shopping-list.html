@@ -1,0 +1,24 @@
+{% extends 'budgetbot/base.html' %}
+
+{% block title %}BudgetBot{% endblock %}
+
+{% block main %}
+
+Hi
+
+{% endblock main %}
+
+{% block scripts %}
+<script type="text/javascript">
+
+var slvm = new ShoppingListViewModel({});
+
+$(document).ready(function () {
+
+    ko.applyBindings(slvm);
+
+});
+</script>
+{% endblock scripts %}
+
+{# vim: set syntax=htmldjango: #}

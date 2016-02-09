@@ -13,7 +13,7 @@ log = logging.getLogger(__name__)
 module_template_prefix = 'budgetbot'
 module_template_package = 'budgetbot.webapp.budgetbot.templates'
 
-__all__ = ['Splash', 'InsertExpense']
+__all__ = ['Splash', 'ShoppingListTemplate', 'InsertExpense']
 
 class Splash(Handler):
 
@@ -27,11 +27,21 @@ class Splash(Handler):
             ExpenseCategoriesDenormalized. \
             get_all_with_budgets(self.cw.get_pgconn())
 
-
         return Response.tmpl('budgetbot/splash.html',
                              people=people,
                              expense_categories_denormal\
                              =expense_categories_denormal)
+
+class ShoppingListTemplate(Handler):
+
+    route_strings = set(['GET /shopping-list'])
+    route = Handler.check_route_strings
+
+    def handle(self, req):
+
+        return Response.tmpl('budgetbot/shopping-list.html')
+
+
 
 class InsertExpense(Handler):
 
