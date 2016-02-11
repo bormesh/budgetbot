@@ -18,6 +18,31 @@ values
 ('long term'),
 ('short term');
 
+create table stores
+(
+    store citext primary key,
+
+    inserted timestamp not null default now(),
+    updated timestamp
+);
+
+create trigger stores_set_updated_column
+before update
+on stores
+for each row
+execute procedure set_updated_column();
+
+insert into stores
+(store)
+values
+('grocery'),
+('pharmacy'),
+('baumarkt' ),
+('ikea'),
+('department store'),
+('clothing'),
+('electronics'),
+('unknown');
 
 create table shopping_list_items
 (
@@ -26,6 +51,10 @@ create table shopping_list_items
 
     shopping_category citext not null references
     shopping_categories(title),
+
+    store citext not null references
+    stores (store),
+
 
     inserted timestamp not null default now(),
     updated timestamp
@@ -36,4 +65,5 @@ before update
 on shopping_list_items
 for each row
 execute procedure set_updated_column();
+
 
