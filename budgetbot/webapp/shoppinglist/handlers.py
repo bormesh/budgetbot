@@ -15,7 +15,7 @@ log = logging.getLogger(__name__)
 module_template_prefix = 'shoppinglist'
 module_template_package = 'budgetbot.webapp.shoppinglist.templates'
 
-__all__ = ['AllItems', 'InsertShoppingItem', 'RemoveShoppingItem' ]
+__all__ = ['AllItems', 'AllStores', 'InsertShoppingItem', 'RemoveShoppingItem' ]
 
 class AllItems(Handler):
 
@@ -41,6 +41,31 @@ class AllItems(Handler):
             success=True,
             message="Returning Shopping List",
             items=cursor.fetchall()))
+
+class AllStores(Handler):
+
+    route_strings = set(['GET /api/all-stores'])
+    route = Handler.check_route_strings
+
+
+    def handle(self, req):
+        pgconn = self.cw.get_pgconn()
+
+        cursor = pgconn.cursor()
+
+        cursor.execute(textwrap.dedent("""
+
+            select store
+
+            from stores
+
+        """))
+
+        return Response.json(dict(
+            reply_timestamp=datetime.datetime.now(),
+            success=True,
+            message="Returning Shopping List",
+            stores=[row.store for row in cursor.fetchall()]))
 
 
 class InsertShoppingItem(Handler):
