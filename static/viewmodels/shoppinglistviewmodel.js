@@ -85,16 +85,41 @@ function ShoppingListViewModel (data) {
     })};
 
 
+    self.add_item = function() {
 
-    self.add_item = function(item) {
-        self.shopping_items.push(self.item_to_add());
-        self.item_to_add(new ShoppingItem({}));
-
-
-        /*
+        self.is_busy(true);
 
         $.ajax({
-            url:"/add-item",
+            url:"/api/insert-shopping-item",
+            type: "POST",
+            dataType:"json",
+            contentType: "application/json; charset=utf-8",
+            processData: false,
+            data: ko.toJSON(self.item_to_add()),
+
+            success: function (data) {
+                // Recaculate new totals
+                console.log(data);
+
+                self.shopping_items.push(self.item_to_add());
+                self.item_to_add(new ShoppingItem({}));
+            },
+            failure: function(data){
+                alert("failure!");
+            },
+            complete: function(data){
+                self.is_busy(false);
+            }
+        });
+
+    };
+
+    self.delete_item = function(item) {
+
+        console.log('deleting item');
+
+        $.ajax({
+            url:"/api/delete-shopping-item",
             type: "POST",
             dataType:"json",
             contentType: "application/json; charset=utf-8",
@@ -103,43 +128,7 @@ function ShoppingListViewModel (data) {
 
             success: function (data) {
                 // Recaculate new totals
-                console.log(data);
-
-                self.items.add(item);
-                display_news_message('Shopping List deleted!','alert-success')
-            },
-
-            failure: function(data)
-            {
-                alert("failure!")
-            }
-
-
-        });
-        */
-    };
-
-    self.delete_item = function(item) {
-
-        $.ajax({
-            url:"/delete-item",
-            type: "POST",
-            dataType:"json",
-            contentType: "application/json; charset=utf-8",
-            processData: false,
-            data: ko.toJSON(expense),
-
-            success: function (data) {
-                // Recaculate new totals
-                console.log(data);
-
-                var new_amount_spent = (
-                self.amount_spent() -
-                    parseInt(expense.amount()));
-
-                self.amount_spent(new_amount_spent);
-                self.expenses.remove(expense);
-                display_news_message('Expense deleted!','alert-success')
+                self.shopping_items.remove(item);
             },
 
             failure: function(data)
