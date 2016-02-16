@@ -75,13 +75,7 @@ class InsertShoppingItem(Handler):
 
     def handle(self, req):
 
-        log.info("adding new shopping item")
-        expense_uuid = self.insert_expense(req.json['person_id'],
-                            req.json['amount'],
-                            req.json['expense_date'],
-                            req.json['expense_category'],
-                            req.json.get('extra_notes'))
-
+        log.info("adding new shopping item {0}".format(req.json))
         pgconn = self.cw.get_pgconn()
 
         cursor = pgconn.cursor()
@@ -90,24 +84,24 @@ class InsertShoppingItem(Handler):
 
             insert into shopping_list_items
 
-            (item, shopping_category)
+            (item, store, shopping_category)
 
             values
 
-            %(item)s, 'long term'
+            (%(item)s, %(store)s, 'long term')
 
-            returning title, inserted
+            returning inserted
 
-
-        """), dict(title=req.json['title']))
+        """), dict(item=req.json['item'],
+            store=req.json['store']))
 
         result = cursor.fetchone()
 
         return Response.json(dict(
             reply_timestamp=datetime.datetime.now(),
             success=True,
-            message="Inserted {0}".format(req.json['title']),
-            item=dict(result.item)))
+            message="Inserted {0}".format(req.json['item']),
+            item_inserted_time=result.inserted))
 
 class DeleteShoppingItem(Handler):
 
@@ -117,9 +111,6 @@ class DeleteShoppingItem(Handler):
     def handle(self, req):
 
         log.info("deleting shopping item")
-
-        if not req.json:
-            return Response.json({'success':'false'})
 
         log.info("req json is {0}".format(req.json))
 

@@ -13,6 +13,7 @@
 <tr>
  <th>Shopping Item</th>
  <th style="width:20%">Date</th>
+ <th>Action</th>
  </th>
 </tr>
 </thead>
@@ -20,6 +21,8 @@
 <tr>
  <td data-bind="text:item"></td>
  <td></td>
+ <td><button class="btn btn-danger"
+             data-bind="click:$parent.delete_item"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span></button></td>
 </tr>
 </tbody>
 </table>
