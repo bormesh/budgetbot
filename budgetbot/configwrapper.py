@@ -38,6 +38,15 @@ class ConfigWrapper(configwrapper.ConfigWrapper):
         psycopg2.extras.register_composite('people', pgconn,
           factory=PersonFactory)
 
+
+        from budgetbot.pg.sessions import SessionFactory
+
+        psycopg2.extras.register_composite(
+            'webapp_sessions',
+            pgconn,
+            factory=SessionFactory)
+
+
         psycopg2.extras.register_composite('expenses', pgconn,
           factory=ExpenseFactory)
 
@@ -46,8 +55,6 @@ class ConfigWrapper(configwrapper.ConfigWrapper):
 
         psycopg2.extras.register_composite('expense_categories_denormalized', pgconn,
           factory=ExpenseCategoriesDenormalizedFactory)
-
-
 
 
         log.info('Just registered composite types in psycopg2')
