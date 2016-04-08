@@ -23,6 +23,23 @@ function ShoppingListViewModel (data) {
     self.is_saving = ko.observable(false);
     self.is_busy = ko.observable(false);
 
+    /*
+    self.getLocation = function () {
+        self.error('getting location');
+        self.error(navigator.geolocation);
+        if (navigator.geolocation.getCurrentPosition) {
+            navigator.geolocation.getCurrentPosition(self.setPosition);
+        } else {
+            self.error("Geolocation is not supported by this browser.");
+        }
+    };
+
+    self.setPosition = function(position) {
+        self.error('got to set position');
+        self.lat(position.coords.latitude);
+        self.lon(position.coords.longitude);
+    };*/
+
 
     self.initialize = function(){
         self.is_busy(true);
