@@ -30,7 +30,7 @@ class ConfigWrapper(configwrapper.ConfigWrapper):
 
     def register_composite_types(self, pgconn):
 
-        from budgetbot.pg.user import PersonFactory
+        from budgetbot.pg.people import PersonFactory
         from budgetbot.pg.expenses import ExpenseCategoryFactory, \
                                           ExpenseCategoriesDenormalizedFactory, \
                                          ExpenseFactory
