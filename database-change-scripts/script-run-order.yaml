@@ -11,3 +11,4 @@ script_order:
 -   add-expenses.sql
 -   add-expense-denormalized-view.sql
 -   add-shopping-list.sql
+-   make-webapp-sessions.sql
