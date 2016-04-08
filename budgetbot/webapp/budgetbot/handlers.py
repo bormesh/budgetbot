@@ -13,7 +13,25 @@ log = logging.getLogger(__name__)
 module_template_prefix = 'budgetbot'
 module_template_package = 'budgetbot.webapp.budgetbot.templates'
 
-__all__ = ['Splash', 'ShoppingListTemplate', 'InsertExpense']
+__all__ = ['TemplateServer', 'Splash', 'ShoppingListTemplate', 'InsertExpense']
+
+
+class TemplateServer(Handler):
+
+    route_strings = dict({
+        "GET /bb":                              "budgetbot/budgetbot.html",
+        # "GET /weekly-manifests":              "budgetbot/weeklymanifests.html",
+        "GET /login":                           "budgetbot/login.html",
+        "GET /reset-password":                  "budgetbot/reset-password.html",
+        })
+
+    route = Handler.check_route_strings
+
+    def handle(self, req):
+
+        template_name = self.route_strings[req.line_one]
+        return Response.tmpl(template_name, args=req.wz_req.args)
+
 
 class Splash(Handler):
 
