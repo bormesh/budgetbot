@@ -13,6 +13,7 @@
 <tr>
  <th>Shopping Item</th>
  <th style="width:20%">Date</th>
+ <th>Action</th>
  </th>
 </tr>
 </thead>
@@ -20,6 +21,8 @@
 <tr>
  <td data-bind="text:item"></td>
  <td></td>
+ <td><button class="btn btn-danger"
+             data-bind="click:$parent.delete_item"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span></button></td>
 </tr>
 </tbody>
 </table>
@@ -32,8 +35,19 @@
 <input class="form-control" type="text" data-bind="value:item" />
 </div>
 
+<div class=" form-group">
+<label>What kind of store</label>
+<select class="selectpicker form-control"
+    data-bind="options:$parent.store_options,
+               value:store">
+
+</select>
+</div>
+
 <div class="form-group">
-<button class="btn btn-primary btn-lg" data-bind="click:$parent.add_item">Add
+<button class="btn btn-primary btn-lg"
+data-bind="click:$parent.add_item, disable:$parent.add_button_disabled">
+Add
 Item</button>
 </div>
 
@@ -54,7 +68,12 @@ var slvm = new ShoppingListViewModel({});
 $(document).ready(function () {
 
     ko.applyBindings(slvm);
-    slvm.initialize();
+    slvm.initialize().then(function(){
+        $("select.selectpicker").selectpicker();
+        if(/Android|webOS|iPhone|iPad|iPod|BlackBerry/i.test(navigator.userAgent)) {
+            $('.selectpicker').selectpicker('mobile');
+    }});
+
 
 });
 </script>
