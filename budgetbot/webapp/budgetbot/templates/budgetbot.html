@@ -1,0 +1,73 @@
+{% extends 'budgetbot/base.html' %}
+
+{% block title %}Streamliner{% endblock %}
+
+{% block styles %}
+<style type="text/css">
+.wm-details th
+{
+    text-align: left;
+}
+.wm-details td
+{
+    text-align: right;
+}
+</style>
+{% endblock styles %}
+
+{% block main %}
+
+<div data-bind="page: {
+    id: 'user',
+    sourceOnShow: '/static/templates/user.html',
+    with: uavm
+ }">
+</div>
+
+<div data-bind="page: {
+    id: 'reset-password',
+    params: ['payload'],
+    sourceOnShow: '/reset-password #main',
+    sourceLoaded: setup_reset_password}">
+</div>
+
+
+<div data-bind="page: {
+    id: 'my-account',
+    role: 'start',
+    source: '/static/templates/my-account.html',
+    with: webapp_session().user(),
+    afterShow: webapp_session().user().initialize}"></div>
+
+
+{% endblock main %}
+
+{% block scripts %}
+
+<script type="text/javascript" src="/static/viewmodels/webappsession.js"></script>
+
+
+<script type="text/javascript"
+src="/static/viewmodels/streamlinerviewmodel.js"></script>
+
+<script type="text/javascript">
+
+var bbvm;
+
+$(document).ready(function () {
+
+    bbvm = new BudgetBotViewModel({});
+
+    pager.extendWithPage(bbvm);
+    ko.applyBindings(bbvm);
+    pager.start();
+    bbvm.check_login_status();
+});
+
+
+
+</script>
+
+{% endblock scripts %}
+
+{# vim: set syntax=htmldjango: #}
