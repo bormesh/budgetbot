@@ -139,7 +139,6 @@ class Person(object):
     def __jsondata__(self):
 
         d = copy.copy(self.__dict__)
-        d['my_scan_report'] = "/csv/{0}".format(self.my_scan_report_file_name)
 
         return d
 
