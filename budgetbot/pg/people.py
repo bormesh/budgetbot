@@ -27,7 +27,7 @@ class PersonFactory(psycopg2.extras.CompositeCaster):
 class Person(object):
 
     def __init__(self, person_uuid, email_address, salted_hashed_password,
-        person_status, display_name, is_superuser, group_title,
+        person_status, display_name, is_superuser,
         inserted,
         updated):
 
@@ -37,7 +37,6 @@ class Person(object):
         self.person_status = person_status
         self.display_name = display_name
         self.is_superuser = is_superuser
-        self.group_title = group_title
         self.inserted = inserted
         self.updated = updated
 
@@ -54,7 +53,7 @@ class Person(object):
 
     @classmethod
     def insert(cls, pgconn, email_address, raw_password,
-        display_name, group_title):
+        display_name):
 
         """
 
@@ -68,14 +67,13 @@ class Person(object):
 
             insert into people
 
-            (email_address, display_name, group_title,
+            (email_address, display_name,
              salted_hashed_password, person_status)
 
             values
 
             (
              %(email_address)s, %(display_name)s,
-             %(group_title)s,
              crypt(%(raw_password)s, gen_salt('bf')),
              'confirmed'
             )
@@ -83,7 +81,7 @@ class Person(object):
             returning (people.*)::people as person
 
         """,{'email_address':email_address, 'display_name':display_name,
-            'group_title':group_title, 'raw_password':raw_password })
+             'raw_password':raw_password })
 
         new_person = cursor.fetchone().person
 
