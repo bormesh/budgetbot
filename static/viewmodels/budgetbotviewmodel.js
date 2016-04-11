@@ -61,6 +61,8 @@ function BudgetBotViewModel (data) {
     self.is_busy = ko.observable(false);
     self.syslog = ko.observable();
 
+    self.uavm = new UserAdminViewModel({rootvm: self})
+
     self.webapp_session = ko.observable(
         new WebappSession({rootvm: self}));
 
