@@ -188,7 +188,7 @@ function Expense (data) {
 
     var self = this;
 
-    self.person_id = ko.observable(data.person_id);
+    self.person_uuid = ko.observable(data.person_uuid);
     self.expense_date = ko.observable();
     self.amount = ko.observable(data.amount);
 
@@ -221,7 +221,7 @@ function Expense (data) {
                 self.expense_category(),
             expense_date: self.expense_date(),
             expense_uuid: self.expense_uuid(),
-            person_id: self.person_id(),
+            person_uuid: self.person_uuid(),
             amount: self.amount(),
             extra_notes: self.extra_notes()
         };
@@ -600,15 +600,6 @@ function InvoicesViewModel (data) {
                 return new Person(w);
             }));
 
-
-};
-
-function Person (data) {
-
-    var self = this;
-    self.display_name = data.display_name;
-    self.email_address = data.email_address;
-    self.person_id = data.person_id;
 
 };
 

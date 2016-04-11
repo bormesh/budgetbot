@@ -75,7 +75,7 @@ class InsertExpense(Handler):
 
         log.info("req json is {0}".format(req.json))
 
-        expense_uuid = self.insert_expense(req.json['person_id'],
+        expense_uuid = self.insert_expense(req.json['person_uuid'],
                             req.json['amount'],
                             req.json['expense_date'],
                             req.json['expense_category'],
@@ -84,7 +84,7 @@ class InsertExpense(Handler):
         return Response.json({'success':'true',
                               'data':{'expense_uuid':expense_uuid}})
 
-    def insert_expense(self, person_id, amount, expense_date,
+    def insert_expense(self, person_uuid, amount, expense_date,
                        expense_category, extra_notes=None):
 
         pgconn = self.cw.get_pgconn()
@@ -95,18 +95,18 @@ class InsertExpense(Handler):
 
             insert into expenses
 
-            (person_id, amount, expense_date, expense_category,
+            (person_uuid, amount, expense_date, expense_category,
              extra_notes)
 
             values
 
-            ( %(person_id)s, %(amount)s,
+            ( %(person_uuid)s, %(amount)s,
               %(expense_date)s, %(expense_category)s,
               %(extra_notes)s)
 
             returning expense_uuid
 
-        """, {'person_id':person_id, 'amount':amount,
+        """, {'person_uuid':person_uuid, 'amount':amount,
                'expense_date':expense_date,
                'expense_category':expense_category,
                'extra_notes':extra_notes})
