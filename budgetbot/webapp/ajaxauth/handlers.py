@@ -292,7 +292,6 @@ class GetAllUsers(Handler):
     ]
 
     @Handler.require_login
-    @Handler.require_group
     def handle(self, req):
 
         people = [p for p in pg.people.Person.select_all(
@@ -326,7 +325,6 @@ class ChangeStatus(Handler):
 
     @Handler.require_json
     @Handler.require_login
-    @Handler.require_group
     def handle(self, req):
 
         new_status = req.json["new_status"]
@@ -370,7 +368,6 @@ class ChangePersonGroupStatus(Handler):
 
     @Handler.require_json
     @Handler.require_login
-    @Handler.require_group
     def handle(self, req):
 
         new_group = req.json["new_group"]
@@ -406,7 +403,6 @@ class AllGroups(Handler):
     ]
 
     @Handler.require_login
-    @Handler.require_group
     def handle(self, req):
 
         return Response.json(dict(
@@ -451,7 +447,6 @@ class InsertNewUser(Handler):
 
     @Handler.require_json
     @Handler.require_login
-    @Handler.require_group
     def handle(self, req):
 
         log.debug("storing new person...")

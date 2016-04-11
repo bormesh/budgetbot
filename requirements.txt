@@ -13,3 +13,4 @@ psycopg2==2.5
 superlance==0.7
 supervisor==3.0b1
 wsgiref==0.1.2
+itsdangerous

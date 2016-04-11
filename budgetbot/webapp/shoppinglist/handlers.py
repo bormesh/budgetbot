@@ -100,7 +100,7 @@ class InsertShoppingItem(Handler):
         return Response.json(dict(
             reply_timestamp=datetime.datetime.now(),
             success=True,
-            message="Inserted {0}".format(req.json['item']),
+            message="Inserted Item",
             item_inserted_time=result.inserted))
 
 class DeleteShoppingItem(Handler):
@@ -109,10 +109,6 @@ class DeleteShoppingItem(Handler):
     route = Handler.check_route_strings
 
     def handle(self, req):
-
-        log.info("deleting shopping item")
-
-        log.info("req json is {0}".format(req.json))
 
         cursor = self.cw.get_pgconn().cursor()
 
@@ -127,7 +123,7 @@ class DeleteShoppingItem(Handler):
         return Response.json(dict(
             reply_timestamp=datetime.datetime.now(),
             success=True,
-            message="Removed {0}".format(req.json['item'])))
+            message="Removed item"))
 
 
 
