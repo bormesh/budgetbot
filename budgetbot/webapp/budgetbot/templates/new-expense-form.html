@@ -16,9 +16,9 @@ Who's there?
 
 <select class="selectpicker"
     data-width="100%"
-    data-bind="foreach: people, value:expense().person_id">
+    data-bind="foreach: people, value:expense().person_uuid">
 
-<option data-bind="text:display_name, value:person_id"></option>
+<option data-bind="text:display_name, value:person_uuid"></option>
 </select>
 
 </div> <!-- ends div class="form-group" -->

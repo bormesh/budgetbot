@@ -3,6 +3,8 @@
 import logging
 import textwrap
 
+import decorator
+
 from horsemeat.webapp import handler
 
 from budgetbot.webapp.framework.response import Response
