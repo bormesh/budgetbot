@@ -31,6 +31,7 @@ class Expenses(object):
             self.expense_uuid,
             self.amount,
             id(self))
+
     @property
     def __jsondata__(self):
 
