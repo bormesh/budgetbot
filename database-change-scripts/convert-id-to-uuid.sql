@@ -20,3 +20,11 @@ add constraint webapp_session_data_pkey primary key (session_uuid, namespace);
 alter table people drop column person_id;
 alter table webapp_sessions drop column session_id;
 alter table webapp_sessions drop column person_id;
+
+
+alter table expenses drop column person_id;
+alter table expenses add column person_uuid uuid references people (person_uuid);
+
+update expenses set person_uuid = (select person_uuid from people where email_address = 'rob@216software.com';
+
+alter table expenses alter column person_uuid set not null;
