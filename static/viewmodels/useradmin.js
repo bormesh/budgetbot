@@ -35,58 +35,8 @@ function UserAdminViewModel (data){
 
     self.addUserInitialize = function()
     {
-      self.get_group_titles();
+      console.log('init add user');
     }
-
-    self.scannersWithTrucksInitialize = function()
-    {
-        console.log('init');
-        self.get_trucks_and_scanners();
-    }
-
-    self.get_trucks_and_scanners = function () {
-
-        self.rootvm.is_busy(true);
-        self.rootvm.syslog("Getting all scanners and trucks");
-
-        return $.ajax({
-            url: "/api/scanners-trucks",
-            type: "GET",
-            dataType: "json",
-            complete: function () {
-                self.rootvm.is_busy(false);
-                self.rootvm.syslog("Finished getting scanner and trucks");
-            },
-            success: function (data) {
-                if (data.success == true)
-                {
-                    self.scanners_with_trucks(
-                       ko.utils.arrayMap(
-                            data.trucks,
-                            function (p) {
-
-                              p.rootvm = self.rootvm;
-                              var truck = new TruckScannerPeople(p);
-                              return truck;
-
-                    }));
-
-                    return true;
-
-                }
-                else if (data.success == false && data.needs_to_log_in) {
-                    toastr.error(data.message);
-                    pager.navigate("login");
-                }
-                else {
-                    toastr.error(data.message);
-                    pager.navigate("login");
-                }
-            }
-
-        });
-    }
-
 
 
     self.new_user = ko.observable(new Person({rootvm: self.rootvm}));
