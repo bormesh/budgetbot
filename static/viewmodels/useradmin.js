@@ -1,18 +1,5 @@
 "use strict";
 
-function TruckScannerPeople(data){
-
-    var self = this;
-    self.type = "TruckScannerPeople";
-
-    self.rootvm = data.rootvm;
-
-    self.tlm_id = ko.observable(data.tlm_id);
-    self.bol = ko.observable(data.bol);
-
-    self.scanners = ko.observableArray(data.scanners);
-}
-
 function UserAdminViewModel (data){
 
     var self = this;

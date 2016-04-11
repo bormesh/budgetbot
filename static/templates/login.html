@@ -1,9 +1,3 @@
-{% extends 'budgetbot/base.html' %}
-
-{% block title %}Login{% endblock %}
-
-{% block main %}
-
 <!-- not signed in yet -->
 <div data-bind="visible: !user_logged_in(), with: webapp_session().user">
 
@@ -108,6 +102,3 @@ I'll send you a link in your email that you can use to reset password.
 
 </div><!-- visible webapp_session().person_uuid -->
 
-{% endblock main %}
-
-{# vim: set syntax=htmldjango: #}
