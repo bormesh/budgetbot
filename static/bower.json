@@ -15,7 +15,7 @@
   ],
   "dependencies": {
     "bootstrap": "~3.3.5",
-    "knockout": "~3.1.0",
+    "knockout": "~3.2.0",
     "font-awesome": "~4.1.0",
     "jquery-ui": "~1.11.0",
     "momentjs": "~2.7.0",
