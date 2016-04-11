@@ -438,15 +438,9 @@ class InsertNewUser(Handler):
         "email_address",
         "display_name",
         "raw_password",
-        "group_title"
-    ]
-
-    required_user_groups = [
-        "admin",
     ]
 
     @Handler.require_json
-    @Handler.require_login
     def handle(self, req):
 
         log.debug("storing new person...")
@@ -463,7 +457,6 @@ class InsertNewUser(Handler):
                 req.json['email_address'],
                 req.json['raw_password'],
                 req.json['display_name'],
-                req.json['group_title']
             )
 
         except Exception as e:
@@ -481,7 +474,7 @@ class InsertNewUser(Handler):
         else:
 
             return Response.json(dict(
-                message="We inserted a new user",
+                message="Your user account has been created. Now you can login!",
                 new_user=new_user,
                 reply_timestamp=datetime.datetime.now(),
                 success=True))
