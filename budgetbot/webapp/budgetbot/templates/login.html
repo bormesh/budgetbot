@@ -7,7 +7,7 @@
 <!-- not signed in yet -->
 <div data-bind="visible: !user_logged_in(), with: webapp_session().user">
 
-<h1>Log in to Streamliner</h1>
+<h1>Log in to Budgetbot</h1>
 
 <form class="form" data-bind="visible: !forgot_password()">
 
@@ -79,7 +79,7 @@ I'll send you a link in your email that you can use to reset password.
 
 <div data-bind="visible: user_logged_in()">
 
-<h1>Welcome back to Streamliner,
+<h1>Welcome back to Budgetbot,
 <span data-bind="text: webapp_session().user().display_name"></span>
 </h1>
 
