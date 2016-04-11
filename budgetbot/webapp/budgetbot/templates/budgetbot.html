@@ -31,6 +31,12 @@
     sourceLoaded: setup_reset_password}">
 </div>
 
+<div data-bind="page: {
+    id: 'login',
+    sourceOnShow: 'static/templates/login.html',
+    afterShow: check_login_status}">
+</div>
+
 
 <div data-bind="page: {
     id: 'my-account',
