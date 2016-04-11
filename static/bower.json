@@ -20,6 +20,7 @@
     "jquery-ui": "~1.11.0",
     "momentjs": "~2.7.0",
     "toastr":"~2.0.3",
+    "pagerjs": "~1.0.1",
     "d3":"~3.3.8",
     "nvd3":"~1.1.15-beta",
     "bootstrap-select": "https://github.com/silviomoreto/bootstrap-select.git#~1.5.4",
