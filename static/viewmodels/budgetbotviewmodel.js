@@ -109,13 +109,7 @@ function BudgetBotViewModel (data) {
      * links to show */
 
     self.show_user_admin = ko.computed(function (){
-        if(self.user_logged_in())
-        {
-            return self.webapp_session().user().group_title() == 'admin';
-        }
-        else{
-            return false;
-        }
+        return false;
     });
 
 };

@@ -110,7 +110,6 @@ WebappSession.prototype.toJSON = function () {
         expires: self.expires(),
         user: self.user().toJSON()
     };
-
 };
 
 
@@ -125,10 +124,7 @@ function Person (data) {
     self.email_address = ko.observable(data.email_address);
     self.display_name = ko.observable(data.display_name);
     self.person_status = ko.observable(data.person_status);
-    self.group_title = ko.observable(data.group_title);
-    self.original_group_title = ko.observable(data.group_title);
     self.raw_password = ko.observable(data.raw_password);
-    self.my_scan_report = data.my_scan_report;
 
     self.toJSON = function () {
 
@@ -194,12 +190,10 @@ function Person (data) {
             self.person_uuid(d.person_uuid);
             self.email_address(d.email_address);
             self.display_name(d.display_name);
-            self.group_title(d.group_title);
         } else {
             self.person_uuid(null);
             self.email_address(null);
             self.display_name(null);
-            self.group_title(null);
         }
 
     };
@@ -525,8 +519,14 @@ function Person (data) {
 
     self.add_new_user_disable = ko.computed(function ()
     {
-        return (self.display_name() == null || self.raw_password() == null ||
-            self.email_address() == null || self.group_title() == null);
+
+        if(self.display_name() && self.raw_password() &&
+            self.email_address()){
+            return false;
+        }
+        else{
+            return true;
+        }
     });
 
     self.save_new_user = function () {
@@ -551,7 +551,6 @@ function Person (data) {
                 display_name: self.display_name(),
                 email_address: self.email_address(),
                 raw_password: self.raw_password(),
-                group_title: self.group_title()
             }),
 
             complete: function (jqXHR, s) {
@@ -568,6 +567,8 @@ function Person (data) {
 
                     toastr.success(data.message);
                     console.log("new person uuid ", data.person_uuid)
+
+                    pager.navigate('/login');
 
                     self.reset_new_user_form();
                 }
