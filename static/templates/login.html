@@ -1,7 +1,11 @@
 <!-- not signed in yet -->
 <div data-bind="visible: !user_logged_in(), with: webapp_session().user">
 
-<h1>Log in to Budgetbot</h1>
+<h2>BudgetBot
+
+<span class="small">You don't have to be a robot to get your budget
+right!</span>
+</h2>
 
 <form class="form" data-bind="visible: !forgot_password()">
 
@@ -11,7 +15,9 @@
 
 <input class="form-control" type="email"
     data-bind="value: email_address" />
+</div> <!-- closes form-group -->
 
+<div class="form-group">
 <label>Password</label>
 
 <input class="form-control"
