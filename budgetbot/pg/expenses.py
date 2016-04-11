@@ -12,7 +12,7 @@ class Expenses(object):
     def __init__(self, expense_uuid,
         amount, expense_date, attached_file_urls,
         expense_category, extra_notes,
-        person_id, inserted, updated):
+        person_uuid, inserted, updated):
 
         self.expense_uuid = expense_uuid
         self.expense_date = expense_date
@@ -20,7 +20,7 @@ class Expenses(object):
         self.extra_notes = extra_notes
         self.expense_category = expense_category
         self.attached_file_urls = attached_file_urls
-        self.person_id = person_id
+        self.person_uuid = person_uuid
         self.inserted = inserted
         self.updated = updated
 
@@ -42,7 +42,7 @@ class Expenses(object):
                 'amount',
                 'extra_notes',
                 'expense_category',
-                'self.person_id'])}
+                'self.person_uuid'])}
 
 
 
