@@ -18,9 +18,10 @@
 {% block main %}
 
 <div data-bind="page: {
-    id: 'user',
-    sourceOnShow: '/static/templates/user.html',
+    id: 'add-user',
+    sourceOnShow: '/static/templates/adduser.html',
     with: uavm
+    afterShow: addUserInitialize
  }">
 </div>
 
