@@ -47,7 +47,7 @@ class AllStores(Handler):
     route_strings = set(['GET /api/all-stores'])
     route = Handler.check_route_strings
 
-
+    @Handler.require_login
     def handle(self, req):
         pgconn = self.cw.get_pgconn()
 
