@@ -51,7 +51,18 @@ function ShoppingListViewModel (data) {
             processData: false,
             success: function (data) {
                 // Recaculate new totals
-                self.store_options(data.stores);
+                //
+                if(data.success == true){
+                    self.store_options(data.stores);
+                }
+                else if (data.success == false && data.needs_to_log_in) {
+                    toastr.error(data.message);
+                    pager.navigate("login");
+                }
+                else {
+                    toastr.error(data.message);
+                    pager.navigate("login");
+                }
             },
 
             failure: function(data)
