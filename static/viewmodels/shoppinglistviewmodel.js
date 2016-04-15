@@ -23,36 +23,21 @@ function ShoppingListViewModel (data) {
     self.is_saving = ko.observable(false);
     self.is_busy = ko.observable(false);
 
-    /*
-    self.getLocation = function () {
-        self.error('getting location');
-        self.error(navigator.geolocation);
-        if (navigator.geolocation.getCurrentPosition) {
-            navigator.geolocation.getCurrentPosition(self.setPosition);
-        } else {
-            self.error("Geolocation is not supported by this browser.");
-        }
-    };
-
-    self.setPosition = function(position) {
-        self.error('got to set position');
-        self.lat(position.coords.latitude);
-        self.lon(position.coords.longitude);
-    };*/
-
-
     self.initialize = function(){
         self.is_busy(true);
 
         return (self.get_all_store_options().then(self.get_all_items).then(function(){
           self.is_busy(false);
+
+          // Set up an interval to long poll for new items
+          //
+          setInterval(self.get_all_items, 15000);
         }));
     };
 
     self.item_to_add = ko.observable(new ShoppingItem({}));
 
     self.add_button_disabled = ko.computed(function(){
-
         return self.is_busy() || (!self.item_to_add().ready_to_add());
     });
 
