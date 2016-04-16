@@ -46,6 +46,13 @@
     with: webapp_session().user(),
     afterShow: webapp_session().user().initialize}"></div>
 
+<div data-bind="page:{
+    id: 'shopping-list',
+    source: '/static/templates/shopping-list.html',
+    with: slvm,
+    afterShow: slvm.initialize
+}"</div>
+
 
 {% endblock main %}
 
@@ -56,6 +63,10 @@
 
 <script type="text/javascript"
 src="/static/viewmodels/budgetbotviewmodel.js"></script>
+
+<script type="text/javascript"
+src="/static/viewmodels/shoppinglistviewmodel.js"></script>
+
 
 <script type="text/javascript">
 
