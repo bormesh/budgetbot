@@ -13,4 +13,4 @@ script_order:
 -   make-webapp-sessions.sql
 -   convert-id-to-uuid.sql
 -   adjust-session-expires-time.sql
-
+-   rewrite-shopping-list.sql
