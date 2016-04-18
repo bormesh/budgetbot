@@ -28,9 +28,7 @@ function ShoppingListViewModel (data) {
 
         return (self.get_all_store_options().then(self.get_all_items).then(function(){
           self.is_busy(false);
-
           // Set up an interval to long poll for new items
-          //
           setInterval(self.get_all_items, 15000);
         }));
     };
