@@ -62,6 +62,7 @@ function BudgetBotViewModel (data) {
     self.syslog = ko.observable();
 
     self.slvm = new ShoppingListViewModel({rootvm: self});
+    self.aslvm = new AddShoppingListViewModel({rootvm: self});
 
     self.uavm = new UserAdminViewModel({rootvm: self})
 
