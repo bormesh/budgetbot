@@ -23,6 +23,7 @@ class AllItems(Handler):
     route = Handler.check_route_strings
 
 
+    @Handler.require_login
     def handle(self, req):
         pgconn = self.cw.get_pgconn()
 
@@ -53,6 +54,8 @@ class AllStores(Handler):
 
         cursor = pgconn.cursor()
 
+        log.info("json req is {0}".format(req.user))
+
         cursor.execute(textwrap.dedent("""
 
             select store
@@ -64,7 +67,7 @@ class AllStores(Handler):
         return Response.json(dict(
             reply_timestamp=datetime.datetime.now(),
             success=True,
-            message="Returning Shopping List",
+            message="Shopping list store types",
             stores=[row.store for row in cursor.fetchall()]))
 
 
@@ -73,6 +76,7 @@ class InsertShoppingItem(Handler):
     route_strings = set(['POST /api/insert-shopping-item'])
     route = Handler.check_route_strings
 
+    @Handler.require_login
     def handle(self, req):
 
         log.info("adding new shopping item {0}".format(req.json))
@@ -108,6 +112,7 @@ class DeleteShoppingItem(Handler):
     route_strings = set(['POST /api/delete-shopping-item'])
     route = Handler.check_route_strings
 
+    @Handler.require_login
     def handle(self, req):
 
         cursor = self.cw.get_pgconn().cursor()
