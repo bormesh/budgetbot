@@ -15,7 +15,77 @@ log = logging.getLogger(__name__)
 module_template_prefix = 'shoppinglist'
 module_template_package = 'budgetbot.webapp.shoppinglist.templates'
 
-__all__ = ['AllItems', 'AllStores', 'InsertShoppingItem', 'RemoveShoppingItem' ]
+__all__ = ['AllLists', 'AllItems', 'AllStores',
+    'InsertShoppingItem', 'RemoveShoppingItem' ]
+
+
+class AllLists(Handler):
+
+    route_strings = set(['GET /api/shopping-lists'])
+    route = Handler.check_route_strings
+
+
+    @Handler.require_login
+    def handle(self, req):
+        pgconn = self.cw.get_pgconn()
+
+        cursor = pgconn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+
+        cursor.execute(textwrap.dedent("""
+
+            select *
+
+            from shopping_lists
+
+            where creator_uuid = %(person_uuid)s
+
+        """), {'person_uuid': req.user.person_uuid})
+
+        return Response.json(dict(
+            reply_timestamp=datetime.datetime.now(),
+            success=True,
+            message="Returning Shopping Lists",
+            lists=cursor.fetchall()))
+
+
+class InsertShoppingList(Handler):
+
+    route_strings = set(['POST /api/insert-shopping-list'])
+    route = Handler.check_route_strings
+
+    @Handler.require_login
+    def handle(self, req):
+
+        log.info("adding new shopping list {0}".format(req.json))
+        pgconn = self.cw.get_pgconn()
+
+        cursor = pgconn.cursor()
+
+        cursor.execute(textwrap.dedent("""
+
+            insert into shopping_list_lists
+
+            (shopping_list_name, store, creator_uuid)
+
+            values
+
+            (%(shopping_list_name)s, %(store)s, %(person_uuid)s)
+
+            returning inserted
+
+        """), dict(shopping_list_name=req.json['shopping_list_name'],
+            store=req.json['store'],
+            person_uuid=req.user.person_uuid))
+
+        result = cursor.fetchone()
+
+        return Response.json(dict(
+            reply_timestamp=datetime.datetime.now(),
+            success=True,
+            message="Inserted list",
+            list_inserted_time=result.inserted))
+
+
 
 class AllItems(Handler):
 
