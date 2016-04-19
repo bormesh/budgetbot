@@ -22,7 +22,7 @@ function ShoppingList (data){
     self.inserted = ko.observable(data.inserted);
 
     self.ready_to_add = ko.computed(function(){
-         return self.item() && self.store();
+         return self.shopping_list_name() && self.store();
     });
 
 };
