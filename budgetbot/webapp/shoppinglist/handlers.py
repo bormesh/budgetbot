@@ -63,7 +63,7 @@ class InsertShoppingList(Handler):
 
         cursor.execute(textwrap.dedent("""
 
-            insert into shopping_list_lists
+            insert into shopping_lists
 
             (shopping_list_name, store, creator_uuid)
 
