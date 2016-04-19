@@ -85,25 +85,12 @@ I'll send you a link in your email that you can use to reset password.
 
 <ul>
     <li data-bind="visible:show_user_admin">
-    <a data-bind="page-href:'/user'">User Admin</a>
+    <a href="#" data-bind="page-href:'/user'">User Admin</a>
     </li>
 
-    <li data-bind="visible:show_truck_level_manifests">
-    <a data-bind="page-href:'/truck-manifests'">Truck-level manifests</a>
+    <li>
+    <a data-bind="page-href:'/shopping-list'">Your shopping lists</a>
     </li>
-
-    <li data-bind="visible:show_truck_level_manifests_to_receive">
-    <a data-bind="page-href:'/truck-manifests-to-receive'">Truck-level manifests to
-    receive</a>
-    </li>
-    <li data-bind="visible: show_weekly_manifests">
-    <a data-bind="page-href:'/weekly-manifests'">Weekly manifests</a>
-    </li>
-
-    <li data-bind="visible: show_containers">
-    <a data-bind="page-href:'/containers'">Containers</a>
-    </li>
-
 </ul>
 
 </div><!-- visible webapp_session().person_uuid -->
