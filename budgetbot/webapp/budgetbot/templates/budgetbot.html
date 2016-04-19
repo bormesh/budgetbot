@@ -48,17 +48,15 @@
 
 <div data-bind="page:{
     id: 'shopping-list',
-    source: '/static/templates/add-shopping-list.html',
+    source: '/static/templates/shopping-list.html',
     with: slvm,
-    afterShow: slvm.initialize
-}"</div>
+    afterShow: slvm.initialize}"></div>
 
 <div data-bind="page:{
-    id: 'shopping-lists',
+    id: 'add-shopping-list',
     source: '/static/templates/add-shopping-list.html',
     with: aslvm,
-    afterShow: aslvm.initialize
-}"</div>
+    afterShow: aslvm.initialize}"></div>
 
 
 {% endblock main %}
