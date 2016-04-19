@@ -7,26 +7,29 @@
 <thead>
 <tr>
  <th>Shopping Lists</th>
+ <th>Item Count</th>
  <th>Action</th>
  </th>
 </tr>
 </thead>
 <tbody data-bind="foreach:shopping_lists">
 <tr>
- <td data-bind="text:item"></td>
+ <td data-bind="text:shopping_list_name, page-href:shopping_list"></td>
  <td></td>
  <td><button class="btn btn-danger"
-             data-bind="click:$parent.delete_item"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span></button></td>
+             data-bind="click:$parent.delete_item">
+             <span class="glyphicon glyphicon-trash" aria-hidden="true"></span></button></td>
 </tr>
 </tbody>
 </table>
 
-<div class="well" data-bind="with:item_to_add">
+<div class="well" data-bind="with:list_to_add">
 
 <h3>Add a List</h3>
 <div class="form-group">
 <label class="control-label">Name</label>
-<input class="form-control" type="text" data-bind="value:item" />
+<input class="form-control" type="text"
+       data-bind="textInput:shopping_list_name" />
 </div>
 
 <div class=" form-group">
@@ -39,7 +42,7 @@
 
 <div class="form-group">
 <button class="btn btn-primary btn-lg"
-data-bind="click:$parent.add_item, disable:$parent.add_button_disabled">
+data-bind="click:$parent.add_list, disable:$parent.add_button_disabled">
 Add the list!</button>
 </div>
 
