@@ -152,30 +152,52 @@ class InsertShoppingItem(Handler):
         log.info("adding new shopping item {0}".format(req.json))
         pgconn = self.cw.get_pgconn()
 
-        cursor = pgconn.cursor()
+        cursor = pgconn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+
+        # IF a user adds an item to a list, we need to make sure
+        # They have rights to add that item
+
+        cursor.execute(textwrap.dedent("""
+
+            insert into items
+
+            (item, inserted_by)
+
+            select %(item)s, %(person_uuid)s
+
+            where not exists (
+                select item from items where item =  %(item)s)
+
+
+
+        """), dict(item=req.json['item'],
+            person_uuid=req.user.person_uuid))
+
+        # Then do the actual insert
 
         cursor.execute(textwrap.dedent("""
 
             insert into shopping_list_items
 
-            (item, store, shopping_category)
+            (item, shopping_list_id, inserted_by)
 
             values
 
-            (%(item)s, %(store)s, 'long term')
+            (%(item)s, %(shopping_list_id)s, %(person_uuid)s)
 
-            returning inserted
+            returning *
 
         """), dict(item=req.json['item'],
-            store=req.json['store']))
+            shopping_list_id=req.json['shopping_list_id'],
+            person_uuid = req.user.person_uuid))
 
         result = cursor.fetchone()
 
         return Response.json(dict(
             reply_timestamp=datetime.datetime.now(),
             success=True,
-            message="Inserted Item",
-            item_inserted_time=result.inserted))
+            message="Inserted item",
+            item_inserted=result))
 
 class DeleteShoppingItem(Handler):
 
