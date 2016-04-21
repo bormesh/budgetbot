@@ -5,8 +5,10 @@ function ShoppingItem (data){
     self.item = ko.observable(data.item);
     self.inserted = ko.observable(data.inserted);
 
+    self.shopping_list_id = ko.observable(data.shopping_list_id);
+
     self.ready_to_add = ko.computed(function(){
-         return self.item() && self.store();
+         return self.item();
     });
 
 };
@@ -167,7 +169,7 @@ function ShoppingListViewModel (data) {
     var self = this;
 
     /* This should come in on the params */
-    self.shopping_list_uuid = ko.observable();
+    self.shopping_list_id = ko.observable();
 
     self.shopping_items = ko.observableArray([]);
     self.store_options = ko.observableArray([]);
@@ -178,7 +180,9 @@ function ShoppingListViewModel (data) {
     self.initialize = function(){
         self.is_busy(true);
 
-        console.log(self.shopping_list_uuid());
+        console.log(self.shopping_list_id());
+
+        self.item_to_add(new ShoppingItem({shopping_list_id:self.shopping_list_id()}));
 
         return (self.get_all_store_options().then(self.get_all_items).then(function(){
           self.is_busy(false);
@@ -229,6 +233,7 @@ function ShoppingListViewModel (data) {
         return $.ajax({
             url:"/api/shopping-list",
             type: "GET",
+            data:{ shopping_list_id: self.shopping_list_id()},
             dataType:"json",
             contentType: "application/json; charset=utf-8",
             processData: false,
@@ -267,7 +272,8 @@ function ShoppingListViewModel (data) {
                 console.log(data);
 
                 self.shopping_items.push(self.item_to_add());
-                self.item_to_add(new ShoppingItem({}));
+                self.item_to_add(new ShoppingItem(
+                    {shopping_list_id:self.shopping_list_id()}));
             },
             failure: function(data){
                 alert("failure!");
