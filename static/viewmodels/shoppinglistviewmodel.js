@@ -166,6 +166,9 @@ function AddShoppingListViewModel (data) {
 function ShoppingListViewModel (data) {
     var self = this;
 
+    /* This should come in on the params */
+    self.shopping_list_uuid = ko.observable();
+
     self.shopping_items = ko.observableArray([]);
     self.store_options = ko.observableArray([]);
 
@@ -174,6 +177,8 @@ function ShoppingListViewModel (data) {
 
     self.initialize = function(){
         self.is_busy(true);
+
+        console.log(self.shopping_list_uuid());
 
         return (self.get_all_store_options().then(self.get_all_items).then(function(){
           self.is_busy(false);
