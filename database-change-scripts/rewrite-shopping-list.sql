@@ -119,6 +119,8 @@ create table shopping_list_items
     shopping_list_id integer not null references
     shopping_lists(shopping_list_id),
 
+    inserted_by uuid references people(person_uuid),
+
     inserted timestamp not null default now(),
     updated timestamp
 );
