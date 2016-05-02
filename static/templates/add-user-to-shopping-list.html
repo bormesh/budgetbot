@@ -1,0 +1,49 @@
+<div class="row">
+
+<div class="col-md-8 col-md-offset-2">
+
+<h2>Shopping List - Name</h2>
+<div class="well">
+
+<h3>Share this shopping list</h3>
+<div class="form-group">
+<label class="control-label">Name or email (we'll search our database)</label>
+<input class="form-control" type="text" data-bind="textInput:name_or_email" />
+</div>
+
+
+<div class="form-group">
+<button class="btn btn-primary btn-lg"
+data-bind="click:user_search, disable:search_button_disabled">
+Search</button>
+</div>
+
+<div id="userSearchMessage" data-bind="if:no_results_message">
+Sorry, no results were found.
+</div>
+
+
+<table class="table table-striped" data-bind="visible:show_results_table">
+<thead>
+<tr>
+<th>Display Name</th>
+<th>Email Address</th>
+</tr>
+</thead>
+<tbody data-bind="foreach:search_results">
+<tr>
+    <td data-bind="text:display_name">
+    <td data-bind="text:email_address">
+</tr>
+
+</tbody>
+</table>
+
+
+
+
+</div> <!-- closes well -->
+
+</div> <!-- closes col-md-8 -->
+
+</div> <!-- closes row -->

@@ -4,6 +4,8 @@ import datetime
 import logging
 import textwrap
 
+import psycopg2
+
 from budgetbot.webapp.framework.handler import Handler
 from budgetbot.webapp.framework.response import Response
 
@@ -14,7 +16,7 @@ log = logging.getLogger(__name__)
 module_template_prefix = 'budgetbot'
 module_template_package = 'budgetbot.webapp.budgetbot.templates'
 
-__all__ = ['TemplateServer', 'Splash', 'ShoppingListTemplate', 'InsertExpense']
+__all__ = ['TemplateServer', 'Splash', 'ShoppingListTemplate', 'InsertExpense', 'UserSearch']
 
 
 class TemplateServer(Handler):
@@ -141,6 +143,47 @@ class DeleteExpense(Handler):
         """),{'expense_uuid':req.json['expense_uuid']})
 
         return Response.json({'success':'true'})
+
+
+class UserSearch(Handler):
+
+    route_strings = set(['POST /api/user-search'])
+    route = Handler.check_route_strings
+
+    @Handler.require_login
+    def handle(self, req):
+
+        log.info("searching for {0}".format(req.json.get('search_query')))
+
+        if not req.json:
+            return Response.json({'success':'false'})
+
+        cursor = self.cw.get_pgconn().cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+
+        cursor.execute(textwrap.dedent("""
+            select p1.email_address, p1.display_name, p1.person_uuid
+
+            from (
+                select email_address, display_name, person_uuid,
+                to_tsvector(email_address) || to_tsvector(display_name) as search_field
+                from people
+            ) p1
+
+            where p1.search_field @@ to_tsquery(%(search_query)s);
+
+        """),{'search_query':req.json['search_query']})
+
+        if cursor.rowcount:
+            results = cursor.fetchall()
+        else:
+            results = list()
+
+        return Response.json(dict(
+            reply_timestamp=datetime.datetime.now(),
+            success=True,
+            search_results=results,
+            num_results = len(results),
+            message="Search results returned"))
 
 
 
