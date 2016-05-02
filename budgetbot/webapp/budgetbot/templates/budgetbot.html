@@ -54,6 +54,14 @@
     afterShow: slvm.initialize}"></div>
 
 <div data-bind="page:{
+    id: 'shopping-list-add-user',
+    source: '/static/templates/add-user-to-shopping-list.html',
+    params: ['shopping_list_id'],
+    with: aduslvm,
+    afterShow: aduslvm.initialize}"></div>
+
+
+<div data-bind="page:{
     id: 'shopping-lists',
     source: '/static/templates/shopping-lists.html',
     with: aslvm,
@@ -72,6 +80,9 @@ src="/static/viewmodels/budgetbotviewmodel.js"></script>
 
 <script type="text/javascript"
 src="/static/viewmodels/shoppinglistviewmodel.js"></script>
+<script type="text/javascript"
+src="/static/viewmodels/shoppinglistadduservm.js"></script>
+
 
 
 <script type="text/javascript">
