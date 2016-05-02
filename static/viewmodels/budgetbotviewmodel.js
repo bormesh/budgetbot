@@ -63,6 +63,7 @@ function BudgetBotViewModel (data) {
 
     self.slvm = new ShoppingListViewModel({rootvm: self});
     self.aslvm = new AddShoppingListViewModel({rootvm: self});
+    self.aduslvm = new AddUserShoppingListViewModel({rootvm: self});
 
     self.uavm = new UserAdminViewModel({rootvm: self})
 
