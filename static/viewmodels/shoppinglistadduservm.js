@@ -4,17 +4,19 @@ function AddUserShoppingListViewModel (data) {
     self.is_busy = ko.observable(false);
 
     self.rootvm = data.rootvm;
+    self.shopping_list_id = ko.observable();
+    self.shopping_list = ko.observable(new ShoppingList({});
 
 
     self.initialize = function(){
         self.is_busy(true);
 
         console.log('shopping list id is ', self.shopping_list_id());
+        self.shopping_list(new ShoppingList({'shopping_list_id':self.shopping_list_id()));
+        self.shopping_list.look_up_deets();
 
         self.is_busy(false);
     };
-    self.shopping_list_id = ko.observable();
-    self.list_to_add = ko.observable(new Person({}));
 
     self.name_or_email = ko.observable();
     self.no_results_message = ko.observable(false);
@@ -25,14 +27,14 @@ function AddUserShoppingListViewModel (data) {
     });
 
     self.show_results_table = ko.computed(function(){
-
         return self.search_results().length > 0;
-
     });
 
-    self.add_user_to_shopping_list = function() {
+    self.add_user_to_shopping_list = function(user) {
 
         self.is_busy(true);
+
+        console.log('adding user uuid: ', user.person_uuid());
 
         $.ajax({
             url:"/api/insert-shopping-list-user",
@@ -40,7 +42,8 @@ function AddUserShoppingListViewModel (data) {
             dataType:"json",
             contentType: "application/json; charset=utf-8",
             processData: false,
-            data: ko.toJSON(self.user_to_add()),
+            data: {'person_uuid':user.person_uuid(),
+                'shopping_list_id':self.shopping_list_id()},
 
             success: function (data) {
                 // Recaculate new totals
@@ -54,7 +57,6 @@ function AddUserShoppingListViewModel (data) {
                 self.is_busy(false);
             }
         });
-
     };
 
     self.user_search = function(){
@@ -64,12 +66,11 @@ function AddUserShoppingListViewModel (data) {
 
         $.ajax({
             url:"/api/user-search",
-            type: "POST",
+            type: "GET",
             dataType:"json",
             contentType: "application/json; charset=utf-8",
             processData: false,
-            data: ko.toJSON({'search_query':self.name_or_email()}),
-
+            data: {'search_query':self.name_or_email()},
             success: function (data) {
                 // Recaculate new totals
                 console.log(data);
