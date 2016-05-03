@@ -147,7 +147,7 @@ class DeleteExpense(Handler):
 
 class UserSearch(Handler):
 
-    route_strings = set(['POST /api/user-search'])
+    route_strings = set(['GET /api/user-search'])
     route = Handler.check_route_strings
 
     @Handler.require_login
