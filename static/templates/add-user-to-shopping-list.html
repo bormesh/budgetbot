@@ -34,6 +34,8 @@ Sorry, no results were found.
 <tr>
     <td data-bind="text:display_name">
     <td data-bind="text:email_address">
+    <td><button data-bind="click:$parent.add_user_to_shopping_list,
+                           disable:$parent.is_busy">Add me!</button></td>
 </tr>
 
 </tbody>

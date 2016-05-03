@@ -15,8 +15,8 @@ log = logging.getLogger(__name__)
 module_template_prefix = 'shoppinglist'
 module_template_package = 'budgetbot.webapp.shoppinglist.templates'
 
-__all__ = ['AllLists', 'AllItems', 'AllStores',
-    'InsertShoppingItem', 'RemoveShoppingItem' ]
+__all__ = ['AllLists', 'AllItems', 'AllStores', 'ShoppingListDeets',
+    'InsertShoppingItem', 'RemoveShoppingItem', 'InsertShoppingListUser' ]
 
 
 class AllLists(Handler):
@@ -84,6 +84,34 @@ class InsertShoppingList(Handler):
             success=True,
             message="Inserted list",
             list_inserted_time=result.inserted))
+
+class ShoppingListDeets(Handler):
+
+    route_strings = set(['GET /api/shopping-list-deets'])
+    route = Handler.check_route_strings
+
+    @Handler.require_login
+    def handle(self, req):
+        pgconn = self.cw.get_pgconn()
+
+        cursor = pgconn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+
+        cursor.execute(textwrap.dedent("""
+
+            select shopping_list_name, store
+
+            from shopping_lists
+
+            where shopping_list_id = %(shopping_list_id)s
+
+        """), {'shopping_list_id': req.args.get('shopping_list_id')})
+
+        return Response.json(dict(
+            reply_timestamp=datetime.datetime.now(),
+            success=True,
+            message="Shopping list deets",
+            items=cursor.fetchone()))
+
 
 
 
@@ -221,6 +249,45 @@ class DeleteShoppingItem(Handler):
             reply_timestamp=datetime.datetime.now(),
             success=True,
             message="Removed item"))
+
+
+class DeleteShoppingItem(Handler):
+
+    route_strings = set(['POST /api/insert-shopping-list-user'])
+    route = Handler.check_route_strings
+
+    @Handler.require_login
+    def handle(self, req):
+
+        # TODO: user request must own shopping list
+
+
+        log.info("connecting shopping list {0} to person {1}".\
+            format(req.json.get('shopping_list_id'), req.json.get('person_uuid'))
+
+        cursor = self.cw.get_pgconn().cursor()
+
+        cursor.execute(textwrap.dedent("""
+
+            insert into shopping_lists_people
+
+            (shopping_list_id, person_uuid)
+
+            values
+
+            (%(shopping_list_id)s, %(person_uuid)s)
+
+
+        """),{'shopping_list_id':req.json['shopping_list_id'],
+            req.json['person_uuid']})
+
+        return Response.json(dict(
+            reply_timestamp=datetime.datetime.now(),
+            success=True,
+            message="Added person to shopping list"))
+
+
+
 
 
 
