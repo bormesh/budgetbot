@@ -27,7 +27,37 @@ function ShoppingList (data){
          return self.shopping_list_name() && self.store();
     });
 
-};
+    /* AJAX look up of name and store etc */
+    self.look_up_deets = function(){
+
+        return $.ajax({
+            url:"/api/shopping-list-deets",
+            type: "GET",
+            data: {'shopping_list_id':self.shopping_list_id()},
+            dataType:"json",
+            contentType: "application/json; charset=utf-8",
+            processData: false,
+            success: function (data) {
+
+                if(data.success == true){
+                   console.log('shopping list deets ', data);
+                }
+                else if (data.success == false && data.needs_to_log_in) {
+                    toastr.error(data.message);
+                    pager.navigate("login");
+                }
+                else {
+                    toastr.error(data.message);
+                    pager.navigate("login");
+                }
+            },
+
+            failure: function(data)
+            {
+                toastr.alert("failure!")
+            }
+        });
+    };
 
 function AddShoppingListViewModel (data) {
     var self = this;
