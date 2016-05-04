@@ -3,6 +3,7 @@
 import logging
 import warnings
 
+import jinja2
 import psycopg2.extras
 
 from horsemeat import configwrapper
@@ -67,3 +68,8 @@ class ConfigWrapper(configwrapper.ConfigWrapper):
         j = self.get_jinja2_environment()
 
         j.add_extension('jinja2.ext.do')
+
+        j.loader.mapping['emailtemplates'] = jinja2.PackageLoader(
+            'budgetbot',
+            'emailtemplates')
+
