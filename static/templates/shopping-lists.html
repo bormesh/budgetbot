@@ -2,7 +2,7 @@
 
 <div class="col-md-8 col-md-offset-2">
 
-<h2>Add a new shopping list</h2>
+<h2>My shopping lists</h2>
 <table class="table table-striped">
 <thead>
 <tr>
@@ -18,7 +18,13 @@
 page-href:{path:'/shopping-list', params:{'shopping_list_id':shopping_list_id}}">
  </a></td>
  <td></td>
- <td><button class="btn btn-danger"
+ <td>
+
+    <a class="btn btn-success btn-sm"
+             data-bind="page-href:{path:'/shopping-list-add-user',
+                        params:{'shopping_list_id':shopping_list_id}}">Share!</a>
+
+                 <button class="btn btn-danger btn-sm"
              data-bind="click:$parent.delete_item">
              <span class="glyphicon glyphicon-trash" aria-hidden="true"></span></button></td>
 </tr>
