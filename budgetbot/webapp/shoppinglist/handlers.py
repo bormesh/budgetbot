@@ -16,7 +16,8 @@ module_template_prefix = 'shoppinglist'
 module_template_package = 'budgetbot.webapp.shoppinglist.templates'
 
 __all__ = ['AllLists', 'AllItems', 'AllStores', 'ShoppingListDeets',
-    'InsertShoppingItem', 'RemoveShoppingItem', 'InsertShoppingListUser' ]
+    'ShoppingListUsers', 'InsertShoppingItem', 'RemoveShoppingItem',
+    'InsertShoppingListUser' ]
 
 
 class AllLists(Handler):
@@ -35,17 +36,37 @@ class AllLists(Handler):
 
             select *
 
-            from shopping_lists
+            from shopping_lists sl
 
             where creator_uuid = %(person_uuid)s
 
         """), {'person_uuid': req.user.person_uuid})
 
+        my_lists = cursor.fetchall()
+
+        cursor.execute(textwrap.dedent("""
+
+            select *
+
+            from shopping_lists sl
+
+            join shopping_lists_people slp
+            on slp.shopping_list_id = sl.shopping_list_id
+
+            where
+
+            slp.person_uuid = %(person_uuid)s
+
+        """), {'person_uuid': req.user.person_uuid})
+
+        shared_with_me = cursor.fetchall()
+
         return Response.json(dict(
             reply_timestamp=datetime.datetime.now(),
             success=True,
             message="Returning Shopping Lists",
-            lists=cursor.fetchall()))
+            shared_lists=shared_with_me,
+            lists=my_lists))
 
 
 class InsertShoppingList(Handler):
@@ -94,6 +115,8 @@ class ShoppingListDeets(Handler):
     def handle(self, req):
         pgconn = self.cw.get_pgconn()
 
+        log.debug(req.wz_req.args)
+
         cursor = pgconn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
         cursor.execute(textwrap.dedent("""
@@ -104,13 +127,44 @@ class ShoppingListDeets(Handler):
 
             where shopping_list_id = %(shopping_list_id)s
 
-        """), {'shopping_list_id': req.args.get('shopping_list_id')})
+        """), {'shopping_list_id': req.wz_req.args.get('shopping_list_id')})
 
         return Response.json(dict(
             reply_timestamp=datetime.datetime.now(),
             success=True,
             message="Shopping list deets",
-            items=cursor.fetchone()))
+            deets=cursor.fetchone()))
+
+
+class ShoppingListUsers(Handler):
+
+    route_strings = set(['GET /api/shopping-list-users'])
+    route = Handler.check_route_strings
+
+    @Handler.require_login
+    def handle(self, req):
+        pgconn = self.cw.get_pgconn()
+
+        log.debug(req.wz_req.args)
+
+        cursor = pgconn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+
+        cursor.execute(textwrap.dedent("""
+
+            select p.email_address, p.display_name, p.person_uuid
+
+            from shopping_lists_people slp
+            join people p on p.person_uuid = slp.person_uuid
+
+            where slp.shopping_list_id = %(shopping_list_id)s
+
+        """), {'shopping_list_id': req.wz_req.args.get('shopping_list_id')})
+
+        return Response.json(dict(
+            reply_timestamp=datetime.datetime.now(),
+            success=True,
+            message="Shopping list deets",
+            people=cursor.fetchall()))
 
 
 
@@ -263,7 +317,8 @@ class DeleteShoppingItem(Handler):
 
 
         log.info("connecting shopping list {0} to person {1}".\
-            format(req.json.get('shopping_list_id'), req.json.get('person_uuid'))
+            format(req.json.get('shopping_list_id'),
+            req.json.get('person_uuid')))
 
         cursor = self.cw.get_pgconn().cursor()
 
@@ -278,8 +333,8 @@ class DeleteShoppingItem(Handler):
             (%(shopping_list_id)s, %(person_uuid)s)
 
 
-        """),{'shopping_list_id':req.json['shopping_list_id'],
-            req.json['person_uuid']})
+            """), dict(shopping_list_id=req.json['shopping_list_id'],
+                person_uuid=req.json['person_uuid']))
 
         return Response.json(dict(
             reply_timestamp=datetime.datetime.now(),
