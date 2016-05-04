@@ -30,17 +30,19 @@ function ShoppingList (data){
     /* AJAX look up of name and store etc */
     self.look_up_deets = function(){
 
+
         return $.ajax({
             url:"/api/shopping-list-deets",
             type: "GET",
-            data: {'shopping_list_id':self.shopping_list_id()},
-            dataType:"json",
-            contentType: "application/json; charset=utf-8",
-            processData: false,
+            data:{'shopping_list_id':self.shopping_list_id()},
             success: function (data) {
 
                 if(data.success == true){
                    console.log('shopping list deets ', data);
+
+                   // Update our data
+                   self.shopping_list_name(data.deets.shopping_list_name);
+                   self.store(data.deets.store);
                 }
                 else if (data.success == false && data.needs_to_log_in) {
                     toastr.error(data.message);
@@ -57,7 +59,8 @@ function ShoppingList (data){
                 toastr.alert("failure!")
             }
         });
-    };
+    }
+};
 
 function AddShoppingListViewModel (data) {
     var self = this;
