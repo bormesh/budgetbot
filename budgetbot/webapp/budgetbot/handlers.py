@@ -153,10 +153,7 @@ class UserSearch(Handler):
     @Handler.require_login
     def handle(self, req):
 
-        log.info("searching for {0}".format(req.json.get('search_query')))
-
-        if not req.json:
-            return Response.json({'success':'false'})
+        log.info("searching for {0}".format(req.wz_req.args.get('search_query')))
 
         cursor = self.cw.get_pgconn().cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
@@ -165,13 +162,14 @@ class UserSearch(Handler):
 
             from (
                 select email_address, display_name, person_uuid,
-                to_tsvector(email_address) || to_tsvector(display_name) as search_field
+                to_tsvector('simple', email_address) ||
+                to_tsvector('simple', display_name) as search_field
                 from people
             ) p1
 
-            where p1.search_field @@ to_tsquery(%(search_query)s);
+            where p1.search_field @@ plainto_tsquery(%(search_query)s);
 
-        """),{'search_query':req.json['search_query']})
+        """),{'search_query':req.wz_req.args['search_query']})
 
         if cursor.rowcount:
             results = cursor.fetchall()

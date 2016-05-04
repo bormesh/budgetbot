@@ -2,7 +2,37 @@
 
 <div class="col-md-8 col-md-offset-2">
 
-<h2>Shopping List - Name</h2>
+<h2><span data-bind="text:shopping_list().shopping_list_name"></span>
+<span class="text-muted" data-bind="text:shopping_list().store"></span>
+</h2>
+
+
+
+<table class="table table-striped" data-bind="visible:show_users_table">
+<caption>People who can view use this list</caption>
+<thead>
+<tr>
+<th>Display Name</th>
+<th>Email Address</th>
+<th>Do somethin'</th>
+</tr>
+</thead>
+<tbody data-bind="foreach:shopping_list_users">
+<tr>
+    <td data-bind="text:display_name">
+    <td data-bind="text:email_address">
+    <td><button class="btn btn-sm btn-warning"
+                           data-bind="click:$parent.remove_user_from_shopping_list,
+                           disable:$parent.is_busy">Remove me :(</button></td>
+</tr>
+
+</tbody>
+</table>
+
+
+
+
+
 <div class="well">
 
 <h3>Share this shopping list</h3>
@@ -28,13 +58,15 @@ Sorry, no results were found.
 <tr>
 <th>Display Name</th>
 <th>Email Address</th>
+<th>Do somethin'</th>
 </tr>
 </thead>
 <tbody data-bind="foreach:search_results">
 <tr>
     <td data-bind="text:display_name">
     <td data-bind="text:email_address">
-    <td><button data-bind="click:$parent.add_user_to_shopping_list,
+    <td><button class="btn btn-sm btn-success"
+                           data-bind="click:$parent.add_user_to_shopping_list,
                            disable:$parent.is_busy">Add me!</button></td>
 </tr>
 
