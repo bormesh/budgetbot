@@ -66,6 +66,7 @@ function AddShoppingListViewModel (data) {
     var self = this;
 
     self.shopping_lists = ko.observableArray([]);
+    self.shared_shopping_lists = ko.observableArray([]);
     self.store_options = ko.observableArray([]);
 
     self.is_saving = ko.observable(false);
@@ -134,6 +135,15 @@ function AddShoppingListViewModel (data) {
                         x = new ShoppingList(p);
                         return x;
                 }));
+
+                self.shared_shopping_lists(
+                    ko.utils.arrayMap(
+                    data.shared_lists,
+                    function (p) {
+                        x = new ShoppingList(p);
+                        return x;
+                }));
+
             },
 
             failure: function(data)
@@ -204,6 +214,8 @@ function ShoppingListViewModel (data) {
     /* This should come in on the params */
     self.shopping_list_id = ko.observable();
 
+    self.shopping_list = ko.observable(new ShoppingList({}));
+
     self.shopping_items = ko.observableArray([]);
     self.store_options = ko.observableArray([]);
 
@@ -213,15 +225,19 @@ function ShoppingListViewModel (data) {
     self.initialize = function(){
         self.is_busy(true);
 
+        self.shopping_items.removeAll();
+
         console.log(self.shopping_list_id());
+        self.shopping_list(new ShoppingList({'shopping_list_id':self.shopping_list_id()}));
 
         self.item_to_add(new ShoppingItem({shopping_list_id:self.shopping_list_id()}));
 
-        return (self.get_all_store_options().then(self.get_all_items).then(function(){
-          self.is_busy(false);
-          // Set up an interval to long poll for new items
-          setInterval(self.get_all_items, 15000);
-        }));
+        return (self.shopping_list().look_up_deets().then(
+            self.get_all_store_options().then(self.get_all_items).then(function(){
+              self.is_busy(false);
+              // Set up an interval to long poll for new items
+              setInterval(self.get_all_items, 15000);
+            })));
     };
 
     self.item_to_add = ko.observable(new ShoppingItem({}));
@@ -264,12 +280,10 @@ function ShoppingListViewModel (data) {
     self.get_all_items = function(){
 
         return $.ajax({
-            url:"/api/shopping-list",
+            url:"/api/shopping-list-items",
             type: "GET",
             data:{ shopping_list_id: self.shopping_list_id()},
-            dataType:"json",
             contentType: "application/json; charset=utf-8",
-            processData: false,
             success: function (data) {
                 // Recaculate new totals
                 self.shopping_items(

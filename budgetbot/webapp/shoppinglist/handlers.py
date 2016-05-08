@@ -171,13 +171,15 @@ class ShoppingListUsers(Handler):
 
 class AllItems(Handler):
 
-    route_strings = set(['GET /api/shopping-list'])
+    route_strings = set(['GET /api/shopping-list-items'])
     route = Handler.check_route_strings
 
 
     @Handler.require_login
     def handle(self, req):
         pgconn = self.cw.get_pgconn()
+
+        # TODO -- Make sure that user has access to shopping list
 
         cursor = pgconn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
@@ -187,12 +189,14 @@ class AllItems(Handler):
 
             from shopping_list_items
 
-        """))
+            where shopping_list_id = %(shopping_list_id)s
+
+        """), {'shopping_list_id': req.wz_req.args.get('shopping_list_id')})
 
         return Response.json(dict(
             reply_timestamp=datetime.datetime.now(),
             success=True,
-            message="Returning Shopping List",
+            message="Returning Shopping List Items",
             items=cursor.fetchall()))
 
 class AllStores(Handler):
