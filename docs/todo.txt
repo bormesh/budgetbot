@@ -1,4 +1,24 @@
 
+Shopping Lists
+--------------
+-   Create pg class for shoppinglists:
+    shopping list could check which users are allowed to access it / delete it /
+    add it, etc. Could also then return jsondict wrapped object
+
+-   Investigate -- when we're on a shopping list or item on a single
+    screen, perhaps we can click on the list and then not need to make a
+    new call to get deets again -- we already have a shopping list
+    object? Can we pass the new object through in the page?
+
+    Or have the same view model for multiple pages (ie with
+    ShoppingLists show all lists and then a click is
+    with:selected_shopping_list something like that?)
+
+    For now doesn't matter too much since calls are cheap and quick
+    ...)
+
+Expenses
+--------
 - Delete works for each expense -- Add confirmation button
   or some such idea so that we don't accidentally delete
 
