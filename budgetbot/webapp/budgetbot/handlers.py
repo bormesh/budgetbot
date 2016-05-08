@@ -48,10 +48,18 @@ class Splash(Handler):
             ExpenseCategoriesDenormalized. \
             get_all_with_budgets(self.cw.get_pgconn())
 
-        return Response.tmpl('budgetbot/splash.html',
-                             people=people,
-                             expense_categories_denormal\
-                             =expense_categories_denormal)
+        if(req.user and (req.user.email_address == 'rob@216software.com' or
+            req.user.email == 'deborah.riemann@googlemail.com')):
+
+            return Response.tmpl('budgetbot/splash.html',
+                                 people=people,
+                                 expense_categories_denormal\
+                                 =expense_categories_denormal)
+
+        else:
+
+            return Response.relative_redirect('/bb')
+
 
 class ShoppingListTemplate(Handler):
 
