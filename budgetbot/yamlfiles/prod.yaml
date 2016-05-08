@@ -71,10 +71,10 @@ logging:
 
 app:
     secret:                     2908 Coleridge
-    host:                       test.budgetbot.local
+    host:                       budgetbot.debbyandrob.com
     scheme:                     http
     launch_debugger_on_error:   False
-    mode:                       dev
+    mode:                       prod
 
 smtp:
     host:   localhost
