@@ -536,8 +536,6 @@ function Person (data) {
         self.rootvm.is_busy(true);
         self.rootvm.syslog("Saving new person");
 
-        alert("About save new user!");
-
         return $.ajax({
 
             url:        "/api/insert-new-user",
