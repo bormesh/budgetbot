@@ -17,7 +17,7 @@ module_template_package = 'budgetbot.webapp.shoppinglist.templates'
 
 __all__ = ['AllLists', 'AllItems', 'AllStores', 'ShoppingListDeets',
     'ShoppingListUsers', 'InsertShoppingItem', 'RemoveShoppingItem',
-    'InsertShoppingListUser' ]
+    'DeleteShoppingItem', 'InsertShoppingListUser' ]
 
 
 class AllLists(Handler):
@@ -92,7 +92,7 @@ class InsertShoppingList(Handler):
 
             (%(shopping_list_name)s, %(store)s, %(person_uuid)s)
 
-            returning inserted
+            returning shopping_list_id
 
         """), dict(shopping_list_name=req.json['shopping_list_name'],
             store=req.json['store'],
@@ -104,7 +104,7 @@ class InsertShoppingList(Handler):
             reply_timestamp=datetime.datetime.now(),
             success=True,
             message="Inserted list",
-            list_inserted_time=result.inserted))
+            shopping_list_id=result.shopping_list_id))
 
 class ShoppingListDeets(Handler):
 
@@ -295,6 +295,8 @@ class DeleteShoppingItem(Handler):
 
         cursor = self.cw.get_pgconn().cursor()
 
+        # TODO Make sure we have rights to delete this item
+
         cursor.execute(textwrap.dedent("""
 
             delete from shopping_list_items
@@ -309,7 +311,7 @@ class DeleteShoppingItem(Handler):
             message="Removed item"))
 
 
-class DeleteShoppingItem(Handler):
+class InsertShoppingListUser(Handler):
 
     route_strings = set(['POST /api/insert-shopping-list-user'])
     route = Handler.check_route_strings

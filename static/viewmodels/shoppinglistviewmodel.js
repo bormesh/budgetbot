@@ -169,6 +169,7 @@ function AddShoppingListViewModel (data) {
                 // Recaculate new totals
                 console.log(data);
 
+                self.list_to_add().shopping_list_id(data.shopping_list_id);
                 self.shopping_lists.push(self.list_to_add());
                 self.list_to_add(new ShoppingItem({}));
             },
@@ -222,21 +223,44 @@ function ShoppingListViewModel (data) {
     self.is_saving = ko.observable(false);
     self.is_busy = ko.observable(false);
 
+    self.interval_timer = null;
+
     self.initialize = function(){
         self.is_busy(true);
 
         self.shopping_items.removeAll();
 
+        //If the timers not null, null it out
+        if(self.interval_timer != null){
+            console.log('clearing interval');
+            clearInterval(self.interval_timer);
+            self.interval_timer = null;
+        }
+
         console.log(self.shopping_list_id());
+
+        console.log(self.interval_timer);
         self.shopping_list(new ShoppingList({'shopping_list_id':self.shopping_list_id()}));
 
         self.item_to_add(new ShoppingItem({shopping_list_id:self.shopping_list_id()}));
+
+
 
         return (self.shopping_list().look_up_deets().then(
             self.get_all_store_options().then(self.get_all_items).then(function(){
               self.is_busy(false);
               // Set up an interval to long poll for new items
-              setInterval(self.get_all_items, 15000);
+              self.interval_timer =  setInterval(function(){
+
+                  self.get_all_items();
+                  // If we're not longer on this page, then clear out
+                  // timer
+                  if(pager.getActivePage().currentId != "shopping-list"){
+                      clearInterval(self.interval_timer);
+                      self.interval_timer = null;
+                      console.log('cleared interval timer ', self.interval_timer);
+                  }
+              }, 30000);
             })));
     };
 

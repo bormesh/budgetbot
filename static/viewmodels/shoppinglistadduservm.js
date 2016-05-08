@@ -17,7 +17,6 @@ function AddUserShoppingListViewModel (data) {
             self.look_up_shopping_list_users).then(
             function(){
                 self.is_busy(false);
-
         }));
 
     };
