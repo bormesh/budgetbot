@@ -61,20 +61,20 @@ Expense Category
 </label>
 <select class="selectpicker"
     data-width="100%"
-    data-bind="options: expense_categories_denormal(),
+    data-bind="options: expense_categories_denormal,
                optionsText: function(item)
-                    { return item.expense_category.title()  },
+                    { console.log(item); return item.expense_category().title()  },
                value:selected_expense_category_from_select">
 
 </select>
 
 
 <div style="background-color:#E2DCEC; width:100%; height:20px; border-radius:5px">
-<div style="background-color:#472873; height:20px; border-radius:5px" data-bind="style: { width: selected_expense_category_from_select().amount_spent_percentage(), color:'red' }"></div>
+<div style="background-color:#472873; height:20px; border-radius:5px" data-bind="style: { width: selected_expense_category_from_select.amount_spent_percentage(), color:'red' }"></div>
 </div>
 <h4>
-$<span data-bind="text:selected_expense_category_from_select().amount_spent()"></span> /
-$<span data-bind="text:selected_expense_category_from_select().budgeted_amount()">
+$<span data-bind="text:selected_expense_category_from_select.amount_spent()"></span> /
+$<span data-bind="text:selected_expense_category_from_select.budgeted_amount()">
 </span></h4>
 </div>
 

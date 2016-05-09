@@ -23,8 +23,10 @@ class TemplateServer(Handler):
 
     route_strings = dict({
         "GET /bb":                              "budgetbot/budgetbot.html",
+        "GET /":                                 "budgetbot/budgetbot.html",
         # "GET /weekly-manifests":              "budgetbot/weeklymanifests.html",
         "GET /login":                           "budgetbot/login.html",
+        "GET /expenses":                        "budgetbot/splash.html",
         "GET /reset-password":                  "budgetbot/reset-password.html",
         })
 
@@ -36,12 +38,14 @@ class TemplateServer(Handler):
         return Response.tmpl(template_name, args=req.wz_req.args)
 
 
-class Splash(Handler):
+class ExpensesPeopleAndCategories(Handler):
 
-    route_strings = set(['GET /'])
+    route_strings = set(['GET /api/budget-people-and-categories'])
     route = Handler.check_route_strings
 
+    @Handler.require_login
     def handle(self, req):
+
         people = user.Person.get_all(self.cw.get_pgconn())
 
         expense_categories_denormal = expenses.\
@@ -51,14 +55,15 @@ class Splash(Handler):
         if(req.user and (req.user.email_address == 'rob@216software.com' or
             req.user.email == 'deborah.riemann@googlemail.com')):
 
-            return Response.tmpl('budgetbot/splash.html',
-                                 people=people,
-                                 expense_categories_denormal\
-                                 =expense_categories_denormal)
+           return Response.json(dict(
+                reply_timestamp=datetime.datetime.now(),
+                success=True,
+                people=people,
+                expense_categories_denormal\
+                =expense_categories_denormal,
+                message="Search results returned"))
 
-        else:
 
-            return Response.relative_redirect('/bb')
 
 
 class ShoppingListTemplate(Handler):

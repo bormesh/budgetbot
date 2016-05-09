@@ -244,7 +244,7 @@ function DenormalizedExpenseCategory(data)
 {
     var self = this;
 
-    self.expense_category = new ExpenseCategory(data.expense_category)
+    self.expense_category = ko.observable(new ExpenseCategory(data.expense_category || {}))
     self.amount_spent = ko.observable(0);
 
     if(data.amount_spent != null)
@@ -291,7 +291,7 @@ function DenormalizedExpenseCategory(data)
     }
 
 
-    if (data.expenses.length > 0 && data.expenses[0] != null){
+    if (data.expenses && data.expenses.length > 0 && data.expenses[0] != null){
 
         self.expenses(ko.utils.arrayMap(
             data.expenses,
@@ -322,37 +322,64 @@ function DenormalizedExpenseCategory(data)
     });
 
 
-    self.start_date =ko.observable(new moment(data.effective.lower));
-    self.end_date = ko.observable(new moment(data.effective.upper));
+    self.start_date = ko.observable();
+    self.end_date = ko.observable();
+    if(data.effective){
+        self.start_date(new moment(data.effective.lower));
+        self.end_date(new moment(data.effective.upper));
+    }
 
 }
-
-function Project (data) {
-
-    var self = this;
-
-    self.project_uuid = ko.observable(data.project_uuid);
-    self.title = ko.observable(data.title);
-    self.client_uuid = ko.observable(data.client_uuid);
-    self.description = ko.observable(data.description);
-    self.inserted = ko.observable(data.inserted);
-    self.updated = ko.observable(data.updated);
-
-};
-
 
 function ExpenseTrackViewModel (data) {
     var self = this;
 
+    self.initialize = function(){
+
+        console.log('initing');
+
+        $.ajax({
+            url:"/api/budget-people-and-categories",
+            type: "GET",
+            success: function (data) {
+
+                if(data.success == true){
+                    //Look up people
+                    self.people(
+                      ko.utils.arrayMap(
+                        data.people,
+                        function (w) {
+                            return new Person(w);
+                        }));
+                    self.expense_categories_denormal(
+                        ko.utils.arrayMap(
+                        data.expense_categories_denormal,
+                        function (p) {
+                            return new DenormalizedExpenseCategory(p);
+                    }));
+
+                }
+                else if (data.success == false && data.needs_to_log_in) {
+                    toastr.error(data.message);
+                    pager.navigate("login");
+                }
+                else {
+                    toastr.error(data.message);
+                    pager.navigate("login");
+                }
+            },
+
+            failure: function(data)
+            {
+                toastr.alert("failure!")
+            }
+        });
+    }
+
+    self.people = ko.observableArray([]);
     self.expense = ko.observable(new Expense({'amount':0}));
 
-    self.expense_categories_denormal = ko.observableArray(
-        ko.utils.arrayMap(
-        data.expense_categories_denormal,
-        function (p) {
-            return new DenormalizedExpenseCategory(p);
-    }));
-
+    self.expense_categories_denormal = ko.observableArray([]);
     self.selected_expense_category = ko.observable();
 
     self.select_category = function(category)
@@ -362,9 +389,10 @@ function ExpenseTrackViewModel (data) {
       location.href = '#deets';
     }
 
-    self.selected_expense_category_from_select = ko.observable();
+    self.selected_expense_category_from_select = ko.observable(new DenormalizedExpenseCategory({}));
 
     self.selected_expense_category_from_select.subscribe(function(newValue) {
+        console.log('hello');
         self.expense().expense_category(newValue.expense_category.title());
     });
 
@@ -521,187 +549,5 @@ function ExpenseTrackViewModel (data) {
     self.minutes_to_add = [15, 30, 60];
 
 };
-
-function RecentTimesheetEntriesViewModel (data) {
-
-    var self = this;
-
-    self.entries = ko.observableArray(
-        ko.utils.arrayMap(
-            data.entries,
-            function (e) {
-                return new DenormalizedTimeSheet(e);
-            }));
-
-    self.workers = ko.observableArray(
-        ko.utils.arrayMap(
-            data.workers,
-            function (w) {
-                return new Person(w);
-            }));
-
-    self.selected_workers = ko.observableArray([]);
-
-    self.toggle_worker_selection = function (worker) {
-
-        // If it ain't in there.
-        if (self.selected_workers.indexOf(worker) == -1) {
-            self.selected_workers.removeAll();
-            self.selected_workers.push(worker);
-
-        // If it is in there.
-        } else {
-            self.selected_workers.remove(worker);
-        }
-    };
-
-
-    self.in_selected_workers = function (x) {
-
-        return ko.utils.arrayFirst(
-            self.selected_workers(),
-            function (w) {
-                return w.email_address == x.worker().email_address;
-            });
-
-    };
-
-    self.total_hours_worked = ko.computed(function() {
-                      var total = 0;
-                      ko.utils.arrayForEach(self.entries(),
-                      function(entry) {
-
-                      if (self.in_selected_workers(entry)){
-                        var value = parseFloat(entry.timesheet().interval_worked());
-                            if (!isNaN(value)) {
-                                total += value;
-                            }
-                        }
-                    });
-                    return (total/60).toFixed(2);
-                }, this);
-};
-
-function InvoicesViewModel (data) {
-
-    var self = this;
-
-    self.invoices = ko.observableArray(
-        ko.utils.arrayMap(
-            data.denormalized_invoices,
-            function (e) {
-                return new DenormalizedInvoice(e);
-            }));
-
-    self.workers = ko.observableArray(
-        ko.utils.arrayMap(
-            data.workers,
-            function (w) {
-                return new Person(w);
-            }));
-
-
-};
-
-function BudgetedExpense (data) {
-
-    var self = this;
-    self.expense_category = ko.observable(data.expense_category);
-};
-
-
-
-function DenormalizedTimeSheet (data) {
-
-    var self = this;
-    self.client = ko.observable(new Client(data.client));
-    self.project = ko.observable(new Project(data.project));
-    self.worker = ko.observable(new Person(data.worker));
-    self.timesheet = ko.observable(new TimeSheet(data.timesheet));
-
-    self.show_raw_json = ko.observable(false);
-
-};
-
-function DenormalizedInvoice (data) {
-    var self = this;
-
-    self.invoice = ko.observable(new Invoice(data.invoice));
-
-    self.client = ko.observable(new Client(data.client));
-
-    self.timesheet_entries = ko.observableArray(ko.utils.arrayMap(
-        data.timesheets,
-        function (w) {
-            return new TimeSheet(w);
-        }));
-
-    self.expenses_total = ko.observable(data.expenses_total);
-
-    /* defined right now as 20% after expenses */
-    self.partner_share = ko.observable(data.partner_share);
-    self.associate_share = ko.observable(data.associate_share);
-
-    self.net_profit = ko.observable(data.net_profit);
-
-    self.total_hours_billed = ko.computed(function() {
-                      var total = 0;
-                      ko.utils.arrayForEach(self.timesheet_entries(),
-                      function(entry) {
-                        var value = parseFloat(entry.interval_worked());
-                        if (!isNaN(value)) {
-                            total += value;
-                        }
-                    });
-                    return (total/60).toFixed(2);
-                }, this);
-
-
-
-    self.worker_hours_billed = ko.computed(function() {
-
-              var worker_hours= {};
-                      ko.utils.arrayForEach(self.timesheet_entries(),
-                      function(entry) {
-                        var value = parseFloat(entry.interval_worked());
-                        var worker = entry.workerbee_id();
-                        if (!isNaN(value)) {
-                            if (worker in worker_hours)
-                            {
-                               worker_hours[worker]+=(value/60);
-                            }
-                            else
-                            {
-                               worker_hours[worker]=(value/60);
-                            }
-                        }
-                    });
-              return worker_hours;
-
-    }, this);
-
-   self.worker_amount_owed = ko.computed(function() {
-
-        var worker_owed = {}
-
-        var hours_billed = self.worker_hours_billed();
-        var total_hours = self.total_hours_billed();
-        var money = self.associate_share();
-
-        Object.keys(hours_billed).forEach(
-        function(key, index)
-        {
-           worker_owed[key] = (hours_billed[key] / total_hours) * money;
-        });
-
-        return worker_owed;
-
-   }, this);
-
-   console.log(self.worker_amount_owed());
-
-
-};
-
 
 

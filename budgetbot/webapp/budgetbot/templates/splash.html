@@ -11,13 +11,7 @@
 {% block scripts %}
 <script type="text/javascript">
 
-var expense_categories_denormal = {{ fancyjsondumps(
-                                     expense_categories_denormal)|safe }};
-var people = {{ fancyjsondumps(people)|safe }};
-
 var etvm = new ExpenseTrackViewModel({
-    people: people,
-    expense_categories_denormal: expense_categories_denormal,
 });
 
 $(document).ready(function () {
@@ -30,6 +24,8 @@ $(document).ready(function () {
     }).datepicker("update", etvm.expense().expense_date());
 
     ko.applyBindings(etvm);
+
+    etvm.initialize();
 
     $("select.selectpicker").selectpicker();
     if(/Android|webOS|iPhone|iPad|iPod|BlackBerry/i.test(navigator.userAgent)) {
