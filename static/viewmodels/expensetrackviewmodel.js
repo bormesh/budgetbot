@@ -38,8 +38,8 @@ function Expense (data) {
 
     self.toJSON = function () {
         return {
-            expense_category:
-                self.expense_category().title(),
+            expense_category: typeof(self.expense_category()) == "string" ?
+                self.expense_category() : self.expense_category().title(),
             expense_date: self.expense_date(),
             expense_uuid: self.expense_uuid(),
             person_uuid: self.person_uuid(),

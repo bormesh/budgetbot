@@ -391,4 +391,30 @@ ko.bindingHandlers.fadeSwitcher = {
     }
 };
 
+/* Borrowed this from: https://gist.github.com/tommck/6174395
+   Now I can display date strings as moment strings with */
+ko.bindingHandlers.moment = {
+    update: function (element, valueAccessor, allBindingsAccessor, viewModel) {
+        var val = valueAccessor();
+        var date = moment(ko.utils.unwrapObservable(val));
+
+        var format = allBindingsAccessor().format || 'MM/DD/YYYY';
+        element.innerHTML = date.format(format);
+    }
+};
+
+
+function display_news_message (message, alert_level) {
+
+    if (alert_level == "alert-info") {
+        toastr.info(message);
+    } else if (alert_level == "alert-success") {
+        toastr.success(message);
+    } else if (alert_level == "alert-danger") {
+        toastr.error(message);
+    } else if (alert_level == "alert-warning") {
+        toastr.warning(message);
+    }
+};
+
 

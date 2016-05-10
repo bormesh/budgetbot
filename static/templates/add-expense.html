@@ -34,7 +34,7 @@ Amount
 <span class="input-group-addon">$</span>
 <input type="number" name="amount"
     class="form-control"
-    data-bind="value:amount" />
+    data-bind="textInput:amount" />
 </div>
 </div> <!-- closes form-group -->
 
@@ -143,12 +143,12 @@ Add Expense
         <th>Delete</th>
     </tr>
     </thead>
-    <tbody data-bind="foreach:expenses">
+    <tbody data-bind="foreach:expenses" style="font-size:14px">
     <tr>
      <td data-bind="moment: expense_date_moment, format: 'MM-DD'"></td>
      <td> $<span data-bind="text:amount"></span></td>
      <td><span data-bind="text:extra_notes"></span></td>
-     <td><button class="btn btn-primary" data-bind="click:$parent.delete_expense">Delete
+     <td><button class="btn btn-danger btn-sm" data-bind="click:$parent.delete_expense">Delete
      </button></td>
     </tr>
     </tbody>
