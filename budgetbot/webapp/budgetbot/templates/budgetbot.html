@@ -67,6 +67,13 @@
     with: aslvm,
     afterShow: aslvm.initialize}"></div>
 
+<div data-bind="page:{
+    id: 'add-expense',
+    source: '/static/templates/add-expense.html',
+    with: expensetrackvm,
+    afterShow: expensetrackvm.initialize}"></div>
+
+
 
 {% endblock main %}
 
@@ -97,7 +104,10 @@ $(document).ready(function () {
     pager.extendWithPage(bbvm);
     ko.applyBindings(bbvm);
     pager.start();
+
     bbvm.check_login_status();
+
+
 });
 
 

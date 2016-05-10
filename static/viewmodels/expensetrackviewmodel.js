@@ -4,6 +4,7 @@ function Expense (data) {
 
     self.person_uuid = ko.observable(data.person_uuid);
     self.expense_date = ko.observable();
+
     self.amount = ko.observable(data.amount);
 
     self.expense_uuid = ko.observable(data.expense_uuid);
@@ -11,10 +12,16 @@ function Expense (data) {
     self.expense_category = ko.observable(data.expense_category);
 
     if (data.expense_date) {
-        self.expense_date(new moment(data.expense_date));
+        self.expense_date(new moment(data.expense_date).format("MM/DD/YYYY"));
     } else {
-        self.expense_date(new moment().format("YYYY-MM-DD"));
+        self.expense_date(new moment().format("MM/DD/YYYY"));
     }
+
+    self.expense_date_moment = ko.computed(function(){
+        if(self.expense_date()){
+            return new moment(self.expense_date());
+        }
+    });
 
     self.extra_notes = ko.observable(data.extra_notes);
     self.inserted = ko.observable(data.inserted);
@@ -32,7 +39,7 @@ function Expense (data) {
     self.toJSON = function () {
         return {
             expense_category:
-                self.expense_category(),
+                self.expense_category().title(),
             expense_date: self.expense_date(),
             expense_uuid: self.expense_uuid(),
             person_uuid: self.person_uuid(),
@@ -59,16 +66,18 @@ function DenormalizedExpenseCategory(data)
     var self = this;
 
     self.expense_category = ko.observable(new ExpenseCategory(data.expense_category || {}))
-    self.amount_spent = ko.observable(0);
+    self.expenses = ko.observableArray([]);
+    self.amount_spent = ko.computed(function(){
+        var total_amount = 0;
 
-    if(data.amount_spent != null)
-    {
-       self.amount_spent(data.amount_spent);
-    }
+        for(i = 0; i < self.expenses().length; i++){
+            total_amount += parseInt(self.expenses()[i].amount());
+        }
+        return total_amount;
+    });
 
     self.budgeted_amount = ko.observable(data.budgeted_amount);
 
-    self.expenses = ko.observableArray();
 
     self.delete_expense = function(expense) {
 
@@ -84,13 +93,7 @@ function DenormalizedExpenseCategory(data)
                 // Recaculate new totals
                 console.log(data);
 
-                var new_amount_spent = (
-                self.amount_spent() -
-                    parseInt(expense.amount()));
-
-                self.amount_spent(new_amount_spent);
                 self.expenses.remove(expense);
-                display_news_message('Expense deleted!','alert-success')
             },
 
             failure: function(data)
@@ -150,26 +153,26 @@ function ExpenseTrackViewModel (data) {
 
     self.initialize = function(){
 
-        console.log('initing');
-
         $.ajax({
-            url:"/api/budget-people-and-categories",
+            url:"/api/expense-categories",
             type: "GET",
             success: function (data) {
 
                 if(data.success == true){
+
                     //Look up people
-                    self.people(
-                      ko.utils.arrayMap(
-                        data.people,
-                        function (w) {
-                            return new Person(w);
-                        }));
                     self.expense_categories_denormal(
                         ko.utils.arrayMap(
                         data.expense_categories_denormal,
                         function (p) {
                             return new DenormalizedExpenseCategory(p);
+                    }));
+
+                    self.expense_categories(
+                        ko.utils.arrayMap(
+                        data.expense_categories,
+                        function (p) {
+                            return new ExpenseCategory(p);
                     }));
 
                 }
@@ -190,24 +193,32 @@ function ExpenseTrackViewModel (data) {
         });
     }
 
-    self.people = ko.observableArray([]);
     self.expense = ko.observable(new Expense({'amount':0}));
 
     self.expense_categories_denormal = ko.observableArray([]);
+
+    self.expense_categories = ko.observableArray([]);
     self.selected_expense_category = ko.observable();
 
     self.select_category = function(category)
     {
       self.selected_expense_category(category);
+      $('html, body').animate({
+          scrollTop: $("#expenseCategoryDeets").offset().top
+      }, 1000);
       //skip down to the deets section of the page
-      location.href = '#deets';
     }
 
-    self.selected_expense_category_from_select = ko.observable(new DenormalizedExpenseCategory({}));
+    self.selected_expense_category_from_select = ko.observable();
 
-    self.selected_expense_category_from_select.subscribe(function(newValue) {
-        console.log('hello');
-        self.expense().expense_category(newValue.expense_category.title());
+    self.selected_denormal_expense = ko.computed(function(){
+
+        if(self.expense().expense_category() != undefined){
+            return ko.utils.arrayFirst(self.expense_categories_denormal(),
+                function(item){
+                    return item.expense_category().title() == self.expense().expense_category().title();
+                });
+        }
     });
 
 
@@ -231,13 +242,6 @@ function ExpenseTrackViewModel (data) {
          return total_spent_amount;
     });
 
-
-    self.people = ko.observableArray(
-        ko.utils.arrayMap(
-            data.people,
-            function (w) {
-                return new Person(w);
-            }));
 
     self.insert_data = ko.computed(function () {
         return {  };
@@ -275,7 +279,7 @@ function ExpenseTrackViewModel (data) {
             self.is_saving(true);
             $.ajax({
 
-                url: "/insert-expense",
+                url: "/api/insert-expense",
                 type: "POST",
                 dataType: "json",
                 contentType: "application/json; charset=utf-8",
@@ -284,30 +288,19 @@ function ExpenseTrackViewModel (data) {
                 data: ko.toJSON(self.expense()),
 
                 success: function (data) {
-                    self.server_reply(data);
-
                     //make sure we give this a uuid
                     var expense_uuid = data['data']['expense_uuid'];
+
                     self.expense().expense_uuid(expense_uuid);
 
-                    /* Make our expense a moment */
-                    self.expense().expense_date(new moment(self.expense().expense_date()));
-
-                    // Then sort I guess?
-                    var new_amount_spent = (
-                    parseInt(self.expense().amount()) +
-                        self.selected_expense_category_from_select().amount_spent());
-
-                    self.selected_expense_category_from_select().amount_spent(new_amount_spent);
-
-                    self.selected_expense_category_from_select().expenses.unshift(self.expense());
+                    self.selected_denormal_expense().expenses.unshift(self.expense());
 
                     self.expense(new Expense({'amount':0,
+                                  'expense_date': self.expense().expense_date(),
                                  'expense_category':self.expense().expense_category()}));
 
                     //self.expense().extra_notes('');
                     self.is_saving(false);
-                    display_news_message('Expense added!','alert-success')
                 },
 
                 failure: function(data)

@@ -40,7 +40,7 @@ class TemplateServer(Handler):
 
 class ExpensesPeopleAndCategories(Handler):
 
-    route_strings = set(['GET /api/budget-people-and-categories'])
+    route_strings = set(['GET /api/expense-categories'])
     route = Handler.check_route_strings
 
     @Handler.require_login
@@ -52,16 +52,19 @@ class ExpensesPeopleAndCategories(Handler):
             ExpenseCategoriesDenormalized. \
             get_all_with_budgets(self.cw.get_pgconn())
 
+        expense_categories = expenses.\
+            ExpenseCategories.get_all(self.cw.get_pgconn())
+
         if(req.user and (req.user.email_address == 'rob@216software.com' or
             req.user.email == 'deborah.riemann@googlemail.com')):
 
            return Response.json(dict(
                 reply_timestamp=datetime.datetime.now(),
                 success=True,
-                people=people,
                 expense_categories_denormal\
                 =expense_categories_denormal,
-                message="Search results returned"))
+                expense_categories=expense_categories,
+                message="People and categories"))
 
 
 
@@ -79,19 +82,17 @@ class ShoppingListTemplate(Handler):
 
 class InsertExpense(Handler):
 
-    route_strings = set(['POST /insert-expense'])
+    route_strings = set(['POST /api/insert-expense'])
     route = Handler.check_route_strings
 
     def handle(self, req):
 
-        log.info("adding expense new")
-
         if not req.json:
             return Response.json({'success':'false'})
 
-        log.info("req json is {0}".format(req.json))
+        log.debug(req.json)
 
-        expense_uuid = self.insert_expense(req.json['person_uuid'],
+        expense_uuid = self.insert_expense(req.user.person_uuid,
                             req.json['amount'],
                             req.json['expense_date'],
                             req.json['expense_category'],
@@ -170,8 +171,13 @@ class UserSearch(Handler):
 
         cursor = self.cw.get_pgconn().cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
+        # Search with both trigrams using similarity and tsquery
+
         cursor.execute(textwrap.dedent("""
-            select p1.email_address, p1.display_name, p1.person_uuid
+            select p1.email_address, p1.display_name, p1.person_uuid,
+            similarity(p1.email_address, %(search_query)s) as email_sim,
+            similarity(p1.display_name, %(search_query)s) as disp_sim,
+            p1.search_field
 
             from (
                 select email_address, display_name, person_uuid,
@@ -180,7 +186,10 @@ class UserSearch(Handler):
                 from people
             ) p1
 
-            where p1.search_field @@ plainto_tsquery(%(search_query)s);
+            where p1.search_field @@ plainto_tsquery(%(search_query)s)
+            or
+            (similarity(p1.email_address, %(search_query)s) +
+            similarity(p1.display_name, %(search_query)s)) > .6
 
         """),{'search_query':req.wz_req.args['search_query']})
 

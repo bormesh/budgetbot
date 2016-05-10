@@ -1,3 +1,6 @@
+/* For searching */
+create extension pg_trgm;
+
 create table budgetbot_schema_version
 (
     script_path citext primary key,

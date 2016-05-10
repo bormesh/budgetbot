@@ -1,0 +1,163 @@
+<div class="row">
+
+<!-- left column -->
+<div class="col-md-6">
+
+<form role="form">
+<h2>Enter an expense</h2>
+
+<div data-bind="with:expense">
+<div class="form-group">
+<label>
+Expense Date
+</label>
+
+<input type="text"
+    class="form-control"
+    data-provide="datepicker"
+    data-date-autoclose="true"
+    data-date-today-btn="true"
+    data-date-today-highlight="true"
+    data-date-todayBtn="true"
+    placeholder="mm/dd/yyyy"
+    data-bind="value:expense_date"/>
+
+</div> <!-- closes form-group -->
+
+
+<div class="form-group">
+<label>
+Amount
+<small class="text-muted">(in $)</small>
+</label>
+<div class="input-group">
+<span class="input-group-addon">$</span>
+<input type="number" name="amount"
+    class="form-control"
+    data-bind="value:amount" />
+</div>
+</div> <!-- closes form-group -->
+
+
+<div class="form-group">
+<ul class="list-unstyled list-inline">
+<li>
+<button class="btn btn-danger btn-sm"
+    data-bind="click: function () { amount(0); }"
+>Clear</button>
+</li>
+</ul>
+</div> <!-- closes form-group -->
+
+<div class="form-group">
+<label>
+Expense Category
+</label>
+<select class="form-control"
+    data-bind="options: $parent.expense_categories,
+               optionsText: function(item)
+                    { return item.title()  },
+               optionsCaption:'Choose...',
+               value:expense_category">
+</select>
+</div> <!-- closes form-group -->
+
+<div data-bind="with:$parent.selected_denormal_expense()">
+<div style="background-color:#E2DCEC; width:100%; height:20px; border-radius:5px">
+<div style="background-color:#472873; height:20px; border-radius:5px" data-bind="style: { width: amount_spent_percentage, color:'red' }"></div>
+</div> <!-- closes background-color -->
+<h4>
+$<span data-bind="text:amount_spent"></span> /
+$<span data-bind="text:budgeted_amount">
+</span></h4>
+
+</div> <!-- closes with:selected_denormal_expense -->
+
+
+
+<div class="form-group">
+<label>Extra notes</label>
+
+<textarea class="form-control"
+    rows="3"
+    data-bind="value: extra_notes"></textarea>
+</div>
+
+<div class="from-control">
+<button
+    class="btn btn-primary btn-lg"
+    data-bind="click: $parent.insert,
+        css: {disabled: $parent.add_expense_button_enabled}">
+Add Expense
+</button>
+</div> <!-- closes form-control -->
+
+</div> <!-- closes with:new_expense -->
+
+
+
+</div><!-- closes first col-md-6 -->
+
+<div class="col-md-6">
+
+<table class="table table-striped">
+<thead><tr>
+    <th>Category</th>
+    <th>Amount Spent</th>
+    <th>Budgeted Amount</th>
+    <th>Deets</th>
+</tr>
+</thead>
+<tfoot><tr>
+<th>Total ($)</th>
+<th>$<span data-bind="text:total_spent_amount"></span></th>
+<th>$<span data-bind="text:total_budgeted_amount"></span></th>
+<th></th>
+</tr></tfoot>
+
+<tbody data-bind="foreach:expense_categories_denormal">
+<tr>
+  <td data-bind="text:expense_category().title"></td>
+  <td data-bind="style: {color : parseInt(amount_spent()) > budgeted_amount() ? 'red' : 'black'}">
+  $<span data-bind="text:amount_spent">
+  </span></td>
+  <td> $<span data-bind="text:budgeted_amount"></span></td>
+  <td><button class="btn btn-sm"
+              data-bind="click:$parent.select_category,
+                       sort_desc: { arr: expenses, prop: 'expense_date()'}">
+      +</button>
+</tr>
+
+</tbody>
+</table>
+
+<div data-bind="if:selected_expense_category" id="expenseCategoryDeets">
+<table class="table" data-bind="with:selected_expense_category">
+    <caption data-bind="text:expense_category().title"></caption>
+    <thead><tr>
+        <th data-bind="sort: { arr: expenses, prop: 'expense_date()'}">
+        Date</th>
+        <th data-bind="sort: { arr: expenses, prop: 'amount()'}">Amount
+        </th>
+        <th>Notes</th>
+        <th>Delete</th>
+    </tr>
+    </thead>
+    <tbody data-bind="foreach:expenses">
+    <tr>
+     <td data-bind="moment: expense_date_moment, format: 'MM-DD'"></td>
+     <td> $<span data-bind="text:amount"></span></td>
+     <td><span data-bind="text:extra_notes"></span></td>
+     <td><button class="btn btn-primary" data-bind="click:$parent.delete_expense">Delete
+     </button></td>
+    </tr>
+    </tbody>
+</table>
+</div> <!-- closes if:selected_category -->
+
+<! -- list all expenses down here .. then we can worry about editing -->
+
+</div><!-- closes second col-md-6 -->
+
+</div><!-- closes class="row" -->
+
