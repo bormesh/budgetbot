@@ -101,7 +101,8 @@ class SignInWithEmailAndPassword(Handler):
 
                 resp.set_session_cookie(
                     sesh.session_uuid,
-                    self.cw.app_secret)
+                    self.cw.app_secret,
+                    expires_date = datetime.datetime.now() + datetime.timedelta(days=30))
 
                 return resp
 
