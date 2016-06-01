@@ -16,7 +16,8 @@ module_template_prefix = 'shoppinglist'
 module_template_package = 'budgetbot.webapp.shoppinglist.templates'
 
 __all__ = ['AllLists', 'AllItems', 'AllStores', 'ShoppingListDeets',
-    'ShoppingListUsers', 'InsertShoppingItem', 'RemoveShoppingItem',
+    'ShoppingListUsers', 'InsertShoppingItem', 'InsertShoppingList',
+    'DeleteShoppingList',
     'DeleteShoppingItem', 'InsertShoppingListUser' ]
 
 
@@ -40,6 +41,8 @@ class AllLists(Handler):
 
             where creator_uuid = %(person_uuid)s
 
+            and removed = false
+
         """), {'person_uuid': req.user.person_uuid})
 
         my_lists = cursor.fetchall()
@@ -56,6 +59,8 @@ class AllLists(Handler):
             where
 
             slp.person_uuid = %(person_uuid)s
+
+            and sl.removed = false
 
         """), {'person_uuid': req.user.person_uuid})
 
@@ -105,6 +110,42 @@ class InsertShoppingList(Handler):
             success=True,
             message="Inserted list",
             shopping_list_id=result.shopping_list_id))
+
+class DeleteShoppingList(Handler):
+
+    route_strings = set(['POST /api/delete-shopping-list'])
+    route = Handler.check_route_strings
+
+    @Handler.require_login
+    def handle(self, req):
+
+        log.info("deleting shopping list {0}".format(req.json))
+        pgconn = self.cw.get_pgconn()
+
+        cursor = pgconn.cursor()
+
+        cursor.execute(textwrap.dedent("""
+
+            update shopping_lists
+
+            set removed = true
+
+            where shopping_list_id = %(shopping_list_id)s
+
+            returning shopping_list_id
+
+        """), dict(shopping_list_id=req.json['shopping_list_id']))
+
+        result = cursor.fetchone()
+
+        return Response.json(dict(
+            reply_timestamp=datetime.datetime.now(),
+            success=True,
+            message="Removed list",
+            shopping_list_id=result.shopping_list_id))
+
+
+
 
 class ShoppingListDeets(Handler):
 

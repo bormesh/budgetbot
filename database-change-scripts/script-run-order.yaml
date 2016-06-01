@@ -14,3 +14,4 @@ script_order:
 -   convert-id-to-uuid.sql
 -   adjust-session-expires-time.sql
 -   rewrite-shopping-list.sql
+-   add-removed-shopping-list-column.sql

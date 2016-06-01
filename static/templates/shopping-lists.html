@@ -12,7 +12,8 @@
  </th>
 </tr>
 </thead>
-<tbody data-bind="foreach:shopping_lists">
+<tbody data-bind="template: {foreach: shopping_lists}">
+
 <tr>
  <td><a data-bind="text:shopping_list_name,
 page-href:{path:'/shopping-list', params:{'shopping_list_id':shopping_list_id}}">
@@ -24,7 +25,7 @@ page-href:{path:'/shopping-list', params:{'shopping_list_id':shopping_list_id}}"
                         params:{'shopping_list_id':shopping_list_id}}">Share!</a>
 
                  <button class="btn btn-danger btn-sm"
-             data-bind="click:$parent.delete_item">
+             data-bind="click:$parent.delete_list">
              <span class="glyphicon glyphicon-trash" aria-hidden="true"></span></button></td>
 </tr>
 </tbody>

@@ -87,6 +87,7 @@ function AddShoppingListViewModel (data) {
         return self.is_busy() || (!self.list_to_add().ready_to_add());
     });
 
+    /* Use this to use jquery slide up on element */
     self.get_all_store_options = function(){
 
         return $.ajax({
@@ -184,6 +185,8 @@ function AddShoppingListViewModel (data) {
     };
 
     self.delete_list = function(list) {
+
+        console.log('deleting ', list);
 
         $.ajax({
             url:"/api/delete-shopping-list",
