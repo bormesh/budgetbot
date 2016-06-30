@@ -3,5 +3,6 @@
 exec gunicorn
 --debug \
 --workers 1 \
+--bind 127.0.0.1:6663 \
 --pid /tmp/dev.budgetbot.pid \
 budgetbot.configwrapper:ConfigWrapper.from_yaml_file_name\(\"dev.yaml\"\).build_webapp\(\)
