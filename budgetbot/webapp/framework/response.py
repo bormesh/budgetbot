@@ -76,9 +76,6 @@ class Response(response.Response):
     @classmethod
     def json(cls, data):
 
-        log.debug("about to return this data after JSON-encoding "
-           "it:\n{0}\n".format(fancyjsondumps(data)))
-
         return super(Response, cls).json(data)
 
 
