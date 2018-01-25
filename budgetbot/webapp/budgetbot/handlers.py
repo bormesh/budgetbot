@@ -56,7 +56,7 @@ class ExpensesPeopleAndCategories(Handler):
             ExpenseCategories.get_all(self.cw.get_pgconn())
 
         if(req.user and (req.user.email_address == 'rob@216software.com' or
-            req.user.email == 'deborah.riemann@googlemail.com')):
+            req.user.email_address == 'Debby.heinen@gmail.com')):
 
            return Response.json(dict(
                 reply_timestamp=datetime.datetime.now(),
