@@ -62,6 +62,38 @@ class ConfigWrapper(configwrapper.ConfigWrapper):
 
         return pgconn
 
+    @property
+    def num_webapp_workers(self):
+        return self.config_dictionary["app"].get("num_webapp_workers", 1)
+
+    @property
+    def send_emails(self):
+        return self.config_dictionary["app"].get("send_emails", False)
+
+    @property
+    def prod_mode(self):
+        return self.config_dictionary["app"].get("prod_mode", False)
+
+
+    @property
+    def webapp_timeout_secs(self):
+        return self.config_dictionary["app"].get("webapp_timeout_secs",
+            30)
+
+    @property
+    def pidfile_prefix(self):
+        return self.config_dictionary["sofaconcerts"]["pidfile_prefix"]
+
+    @property
+    def webapp_frontend_host(self):
+        frontend_host = self.config_dictionary["app"].get('frontend_host')
+        return '{scheme}://{host}'.format(
+                    scheme=self.scheme,
+                    host=frontend_host)
+
+
+
+
 
     def add_more_stuff_to_jinja2_globals(self):
 

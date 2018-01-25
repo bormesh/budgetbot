@@ -75,6 +75,7 @@ app:
     scheme:                     http
     launch_debugger_on_error:   False
     mode:                       prod
+    port:                       6663
 
 smtp:
     host:   localhost

@@ -1,0 +1,50 @@
+{% extends 'budgetbot/base.html' %}
+
+{% block title %}BudgetBot{% endblock %}
+
+{% block main %}
+<!-- need to defined a base url for history -->
+
+<base href="{{cw.web_host}}/" />
+
+{% endblock main %}
+<!-- ROUTING -->
+<div data-bind="page: {id : 'login',
+                source: '/static/templates/new-spa/login.html',
+                afterShow: initialize,
+                role: 'start'}"></div>
+
+<!-- closes routing -->
+{% block scripts %}
+
+<script type="text/javascript"
+src="/static/viewmodels/spa-new/budgetbotbaseviewmodel.js"></script>
+
+
+<script type="text/javascript">
+
+var bbvm;
+
+$(document).ready(function () {
+
+    pager.useHTML5history = true;
+    pager.Href5.history = History;
+
+
+    bbvm = new BudgetBotBaseViewModel({web_host: '{{cw.web_host}}'});
+
+    pager.extendWithPage(bbvm);
+    ko.applyBindings(bbvm);
+    pager.startHistoryJs();
+
+
+    bbvm.check_login_status();
+});
+
+
+
+</script>
+
+{% endblock scripts %}
+
+{# vim: set syntax=htmldjango: #}

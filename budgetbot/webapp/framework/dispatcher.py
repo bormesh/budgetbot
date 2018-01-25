@@ -30,6 +30,9 @@ class Dispatcher(dispatcher.Dispatcher):
             'budgetbot.webapp.budgetbot.handlers'))
 
         self.handlers.extend(self.make_handlers_from_module_string(
+            'budgetbot.webapp.budgetbotnew.handlers'))
+
+        self.handlers.extend(self.make_handlers_from_module_string(
             'budgetbot.webapp.shoppinglist.handlers'))
 
         self.handlers.extend(self.make_handlers_from_module_string(

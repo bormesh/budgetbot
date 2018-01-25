@@ -1,9 +1,38 @@
+budgetbot:
+
+    # We'll need to make sure we have a symbolic link
+    # to here so that photos can be accessed
+    # by server
+    pdf_save_directory:     /var/sofaconcerts/pdf
+    pdf_path_prefix:        https://test.heinen.club/pdf
+    pdf_printer_script_path: /home/sofaconcerts/checkouts/sofaconcerts-2/external-scripts/pdf/pdf.js
+
+    pid_file_prefix:        /tmp
+
+
+
+
 postgresql:
     database:   budgetbot_prod
     host:       localhost
     port:       5432
     user:       budgetbot
     password:   budg3tb0t
+
+
+app:
+    secret:                     Abendrothsweg 49
+    host:                       test.budgetbot.local
+    scheme:                     http
+    launch_debugger_on_error:   False
+    mode:                       dev
+    webapp_port:                6663
+    pidfile:                    budgetbot-dev-webapp.pid
+    num_webapp_workers:         1
+    webapp_timeout_secs:        30
+    access_control:             True
+    send_emails:                False
+
 
 #rackspace cloud files login
 #https://mycloud.rackspace.com/
@@ -68,13 +97,6 @@ logging:
                 format: '%(asctime)-22s [%(process)d] %(name)-30s %(lineno)-5d %(levelname)-8s %(message)s'
 
     script: *defaultlogging
-
-app:
-    secret:                     2908 Coleridge
-    host:                       test.budgetbot.local
-    scheme:                     http
-    launch_debugger_on_error:   False
-    mode:                       dev
 
 smtp:
     host:   localhost

@@ -23,7 +23,7 @@ class TemplateServer(Handler):
 
     route_strings = dict({
         "GET /bb":                              "budgetbot/budgetbot.html",
-        "GET /":                                 "budgetbot/budgetbot.html",
+        "GET /old":                                 "budgetbot/budgetbot.html",
         # "GET /weekly-manifests":              "budgetbot/weeklymanifests.html",
         "GET /login":                           "budgetbot/login.html",
         "GET /expenses":                        "budgetbot/splash.html",

@@ -15,8 +15,9 @@ setup(
     package_dir={'budgetbot': 'budgetbot'},
 
     scripts=[
-        'budgetbot/scripts/run-dev-webapp',
-        'budgetbot/scripts/run-prod-webapp',
+        'budgetbot/scripts/rebuild-database',
+        'budgetbot/scripts/run-webapp',
+        'budgetbot/scripts/budgetbot-config',
     ],
 
 )
