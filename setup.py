@@ -18,6 +18,7 @@ setup(
         'budgetbot/scripts/rebuild-database',
         'budgetbot/scripts/run-webapp',
         'budgetbot/scripts/budgetbot-config',
+        'budgetbot/scripts/upgrade-database',
     ],
 
 )

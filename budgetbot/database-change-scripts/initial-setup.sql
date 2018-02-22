@@ -1,7 +1,5 @@
 /* For searching */
-create extension pg_trgm;
-
-create table budgetbot_schema_version
+create table change_scripts
 (
     script_path citext primary key,
     script_contents text,
@@ -23,8 +21,8 @@ end;
 $$
 language plpgsql;
 
-create trigger budgetbot_schema_version_set_updated_column
+create trigger change_scripts_set_updated_column
 before update
-on budgetbot_schema_version
+on change_scripts
 for each row
 execute procedure set_updated_column();

@@ -37,7 +37,7 @@ create table budgeted_expenses
     budgeted_amount float not null,
 
     effective daterange not null
-    default daterange(now()::date, (now()::date + interval '30 days')::date)
+    default daterange(now()::date, (now()::date + interval '30 days')::date),
 
     inserted timestamp not null default now(),
     updated timestamp

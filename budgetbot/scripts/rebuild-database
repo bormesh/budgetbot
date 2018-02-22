@@ -8,8 +8,8 @@ then
 
 else
 
-    DBNAME=`sofaconcerts-config $1 database_name`
-    DBUSER=`sofaconcerts-config $1 database_user`
+    DBNAME=`budgetbot-config $1 database_name`
+    DBUSER=`budgetbot-config $1 database_user`
 
     sudo -u postgres dropdb --if-exists $DBNAME
     sudo -u postgres createdb --owner $DBUSER $DBNAME

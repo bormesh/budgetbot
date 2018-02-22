@@ -6,6 +6,8 @@ Jinja2==2.6
 PyYAML==3.10
 Werkzeug==0.8.3
 decorator==3.4.0
+colorlog==2.4.0
+LogToPG==0.1.1
 gunicorn==0.17.4
 horsemeat==2.12.17
 ipython==0.13.2
