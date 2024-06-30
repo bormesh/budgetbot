@@ -13,7 +13,7 @@ from budgetbot.webapp.framework.response import Response
 log = logging.getLogger(__name__)
 
 module_template_prefix = 'shoppinglist'
-module_template_package = 'budgetbot.webapp.shoppinglist.templates'
+#module_template_package = 'budgetbot.webapp.shoppinglist.templates'
 
 __all__ = ['AllLists', 'AllItems', 'AllStores', 'ShoppingListDeets',
     'ShoppingListUsers', 'InsertShoppingItem', 'InsertShoppingList',

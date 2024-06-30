@@ -20,6 +20,8 @@ class Dispatcher(dispatcher.Dispatcher):
         self.handlers.extend(self.make_handlers_from_module_string(
             'budgetbot.webapp.mockups.handlers'))
 
+        #self.handlers.extend(self.make_handlers_from_module_string(
+        #    'budgetbot.webapp.auth.handlers'))
         self.handlers.extend(self.make_handlers_from_module_string(
             'budgetbot.webapp.ajaxauth.handlers'))
 

@@ -31,3 +31,17 @@ class TemplateServer(Handler):
 
         template_name = self.route_strings[req.line_one]
         return Response.tmpl(template_name, args=req.wz_req.args)
+
+class TemplateRequrieLoginServer(Handler):
+
+    route_strings = dict({
+        "GET /analysis":                         "budgetbotnew/analysis.html",
+        })
+
+    route = Handler.check_route_strings
+
+    @Handler.require_login
+    def handle(self, req):
+
+        template_name = self.route_strings[req.line_one]
+        return Response.tmpl(template_name, args=req.wz_req.args)

@@ -7,9 +7,16 @@ import clepy
 from horsemeat import fancyjsondumps
 from horsemeat.webapp import response
 
+
+from budgetbot import configwrapper
+
 log = logging.getLogger(__name__)
 
 class Response(response.Response):
+
+
+    configwrapper = configwrapper
+    fancyjsondumps = fancyjsondumps
 
     """
     Add stuff here that is specific to the budgetbot response.
@@ -74,8 +81,36 @@ class Response(response.Response):
 
 
     @classmethod
-    def json(cls, data):
+    def json(cls, data, status='200'):
+        """
+        Matt is overwriting the horsemeat Response.json classmethod
+        here.
 
-        return super(Response, cls).json(data)
+        Future versions of horsemeat will have this code, but right now,
+        I don't want to bump sofaconcerts up to a new version of
+        horsemeat because that might introduce all sorts of weird little
+        issues.
+
+        """
+
+        log.info("IN JSON response")
+
+        if status == '400':
+            response_status = '400 Bad Request'
+        elif status == '404':
+            response_status = '400 Not Found'
+        else:
+            response_status = '200 OK'
+
+        s = bytes(cls.fancyjsondumps(data), 'utf-8')
+        json_response = cls(
+            response_status,
+            [
+                ('Content-Type', 'application/json'),
+                ('Content-Length', str(len(s))),
+            ],
+            s)
+
+        return json_response
 
 

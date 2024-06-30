@@ -1,0 +1,39 @@
+{% extends 'budgetbot/base.html' %}
+
+{% block title %}Analyze Expenses{% endblock %}
+
+{% block main %}
+<!-- need to defined a base url for history -->
+
+<base href="{{cw.web_host}}/" />
+
+{% endblock main %}
+<!-- ROUTING -->
+
+<!-- closes routing -->
+{% block scripts %}
+
+<script type="text/javascript"
+src="/static/viewmodels/analysisvm.js"></script>
+
+
+<script type="text/javascript">
+
+var bbvm;
+
+$(document).ready(function () {
+
+    analysisvm = new AnalysisViewModel({web_host: '{{cw.web_host}}'});
+
+    ko.applyBindings(bbvm);
+
+    analysisvm.initialize();
+});
+
+
+
+</script>
+
+{% endblock scripts %}
+
+{# vim: set syntax=htmldjango: #}

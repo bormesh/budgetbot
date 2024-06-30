@@ -47,17 +47,36 @@ class Expenses(object):
 
 
     @classmethod
-    def get_all(cls, pgconn):
+    def get_all(cls, pgconn, start_date=None, end_date=None):
 
         cursor = pgconn.cursor()
+
+        where_claues = []
+
+        if start_date:
+            where_clauses.append(" inserted > %(start_date)s ")
+
+        if end_date:
+            where_clauses.append(" inserted < %(end_date)s ")
+
+        if where_claues:
+            where_string = " where "
+            for x in where_clauses:
+                if where_clauses.index(x) > 0:
+                    where_string += " and "
+
+                where_string += f" {x} "
 
         cursor.execute(textwrap.dedent("""
             select (e.*):expenses as expense
 
             from expense e
 
+            {where_string}
+
             order by e.inserted
-        """))
+        """).format(where_string), dict(start_date=start_date,
+            end_date=end_date))
 
         if cursor.rowcount:
             return [row.expense for row in cursor.fetchall()]

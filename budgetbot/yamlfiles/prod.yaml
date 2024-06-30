@@ -53,7 +53,7 @@ logging:
             console:
                 class: logging.StreamHandler
                 level: DEBUG
-                formatter: consolefmt
+                formatter: colorfmt
 
             tmpfile:
                 class: logging.FileHandler
@@ -67,15 +67,26 @@ logging:
             consolefmt:
                 format: '%(asctime)-22s [%(process)d] %(name)-30s %(lineno)-5d %(levelname)-8s %(message)s'
 
+            colorfmt:
+                (): "colorlog.ColoredFormatter"
+                format: "%(log_color)s%(asctime)-22s [%(process)d] %(name)-30s %(lineno)-5d %(levelname)-8s %(message)s"
+
+
     script: *defaultlogging
 
 app:
     secret:                     2908 Coleridge
     host:                       budgetbot.debbyandrob.com
-    scheme:                     http
+    scheme:                     https
     launch_debugger_on_error:   False
     mode:                       prod
     port:                       6663
+    webapp_port:                6663
+    pidfile:                    budgetbot-dev-webapp.pid
+    num_webapp_workers:         1
+    webapp_timeout_secs:        30
+    access_control:             True
+    send_emails:                False
 
 smtp:
     host:   localhost

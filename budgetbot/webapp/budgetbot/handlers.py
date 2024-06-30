@@ -27,7 +27,6 @@ class TemplateServer(Handler):
         # "GET /weekly-manifests":              "budgetbot/weeklymanifests.html",
         "GET /login":                           "budgetbot/login.html",
         "GET /expenses":                        "budgetbot/splash.html",
-        "GET /reset-password":                  "budgetbot/reset-password.html",
         })
 
     route = Handler.check_route_strings
@@ -55,8 +54,10 @@ class ExpensesPeopleAndCategories(Handler):
         expense_categories = expenses.\
             ExpenseCategories.get_all(self.cw.get_pgconn())
 
+        log.info(req.user.email_address)
+
         if(req.user and (req.user.email_address == 'rob@216software.com' or
-            req.user.email_address == 'Debby.heinen@gmail.com')):
+            req.user.email_address == 'debby.heinen@gmail.com')):
 
            return Response.json(dict(
                 reply_timestamp=datetime.datetime.now(),
@@ -159,51 +160,35 @@ class DeleteExpense(Handler):
         return Response.json({'success':'true'})
 
 
-class UserSearch(Handler):
+class AllExpenses(Handler):
 
-    route_strings = set(['GET /api/user-search'])
+    """
+
+    This should take dates as well -- for now default ot the past year
+
+    """
+
+    route_strings = set(['GET /api/expenses'])
     route = Handler.check_route_strings
 
     @Handler.require_login
     def handle(self, req):
 
-        log.info("searching for {0}".format(req.wz_req.args.get('search_query')))
 
-        cursor = self.cw.get_pgconn().cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        expense_categories = expenses.\
+            ExpenseCategories.get_all(self.cw.get_pgconn())
 
-        # Search with both trigrams using similarity and tsquery
+        """
 
-        cursor.execute(textwrap.dedent("""
-            select p1.email_address, p1.display_name, p1.person_uuid,
-            similarity(p1.email_address, %(search_query)s) as email_sim,
-            similarity(p1.display_name, %(search_query)s) as disp_sim,
-            p1.search_field
+        if req.user and (req.user.email_address == 'rob@216software.com' or\
+            req.user.email_address == 'Debby.heinen@gmail.com'):
 
-            from (
-                select email_address, display_name, person_uuid,
-                to_tsvector('simple', email_address) ||
-                to_tsvector('simple', display_name) as search_field
-                from people
-            ) p1
+            return Response.json(dict(
+                reply_timestamp=datetime.datetime.now(),
+                success=True,
+                expense_categories=expense_categories,
+                expense_categories=expense_categories,
+                message="People and categories"))
 
-            where p1.search_field @@ plainto_tsquery(%(search_query)s)
-            or
-            (similarity(p1.email_address, %(search_query)s) +
-            similarity(p1.display_name, %(search_query)s)) > .6
-
-        """),{'search_query':req.wz_req.args['search_query']})
-
-        if cursor.rowcount:
-            results = cursor.fetchall()
-        else:
-            results = list()
-
-        return Response.json(dict(
-            reply_timestamp=datetime.datetime.now(),
-            success=True,
-            search_results=results,
-            num_results = len(results),
-            message="Search results returned"))
-
-
+        """
 

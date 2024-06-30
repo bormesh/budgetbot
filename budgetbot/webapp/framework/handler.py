@@ -45,6 +45,10 @@ class Handler(handler.Handler):
 
         if not req.user:
 
+            return Response.relative_redirect('/bb#login')
+
+        elif not req.user and req.is_JSON:
+
             return Response.json(dict(
                 reply_timestamp=datetime.datetime.now(),
                 message="Sorry, you need to log in first!",

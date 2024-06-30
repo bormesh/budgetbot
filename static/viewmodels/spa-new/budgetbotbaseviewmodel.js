@@ -83,7 +83,8 @@ function BudgetBotBaseViewModel(data){
     self.conditions = ko.observable();
 
     self.email_is_valid = ko.computed(function(){
-        return validateEmail(self.email_address());
+        return true;
+        //return validateEmail(self.email_address());
     });
 
 

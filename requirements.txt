@@ -2,18 +2,17 @@
 # --no-index
 # --find-links ./external-code
 
-Jinja2==2.6
-PyYAML==3.10
-Werkzeug==0.8.3
-decorator==3.4.0
+Jinja2==3.0.1
+PyYAML==6.0
+Werkzeug==1.0.1
+decorator==5.1.1
 colorlog==2.4.0
 LogToPG==0.1.1
-gunicorn==0.17.4
-horsemeat==2.12.17
-ipython==0.13.2
-psycopg2==2.5
-superlance==0.7
-supervisor==3.0b1
-wsgiref==0.1.2
+gunicorn==19.9.0
+horsemeat==2.21.7
+ipython==8.9.0
+psycopg2==2.8.3
+superlance==1.0.0
+supervisor==4.2.2
 itsdangerous
 requests

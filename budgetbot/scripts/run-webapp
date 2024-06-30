@@ -21,7 +21,6 @@ else
     WEBAPP_TIMEOUT=`$VIRTUAL_ENV/bin/budgetbot-config $1 webapp_timeout_secs`
 
     exec $VIRTUAL_ENV/bin/gunicorn \
-    --debug \
     --workers $NUM_WEBAPP_WORKERS \
     --bind 127.0.0.1:$PORT \
     --pid $PIDFILE \

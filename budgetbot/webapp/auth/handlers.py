@@ -12,11 +12,11 @@ import datetime
 import psycopg2
 from budgetbot.webapp.framework.handler import Handler
 from budgetbot.webapp.framework.response import Response
-from budgetbot.model import message, session, user
-from budgetbot.model.user import PasswordHistory as password_history
+#from budgetbot.pg import message, session, user
+#from budgetbot.pg.user import PasswordHistory as password_history
 
-from budgetbot.model import numberoffailedloginattemps as loginattempt
-from budgetbot.webapp.auth import scrubbers
+#from budgetbot.pg import numberoffailedloginattemps as loginattempt
+#from budgetbot.webapp.auth import scrubbers
 
 
 log = logging.getLogger(__name__)
@@ -127,7 +127,7 @@ class RegisterNewUser(Handler):
 
                 result = i.execute(self.pgconn)
 
-            except psycopg2.IntegrityError, ex:
+            except psycopg2.IntegrityError as ex:
 
                 log.exception(ex)
                 log.error(ex.args)
@@ -1176,7 +1176,7 @@ class PasswordResetForm(Handler):
             try:
                 values['nonce'] = uuid.UUID(nonce)
 
-            except ValueError, ex:
+            except ValueError as ex:
                 log.exception(ex)
                 errors['nonce'] = "This doesn't look right"
                 values['nonce'] = nonce
@@ -1294,7 +1294,7 @@ class ResetPasswordScrubber(object):
             try:
                 self.values['nonce'] = uuid.UUID(nonce)
 
-            except ValueError, ex:
+            except ValueError as ex:
                 log.exception(ex)
                 self.errors['nonce'] = "This doesn't look right"
                 self.values['nonce'] = nonce
@@ -1721,43 +1721,12 @@ class SetPassword(Handler):
             if values['pw1'] != values['pw2']:
                 errors['pw2'] = 'Mismatch'
 
-            self.check_strong_password(raw_data, errors, values)
 
         except Exception as ex:
             log.exception(ex)
             errors['general'] = 'Sorry, try again'
 
         return raw_data, errors, values
-
-    def check_strong_password(self, raw_data, errors, values):
-
-        password = values['pw1']
-        #strength = ['Blank', 'Very Weak', 'Weak', 'Medium', 'Strong', 'Very Strong']
-        score = 0
-
-        if len(password) < 8 or len(password) < 1:
-            score = score + 1
-
-        if len(password) >= 8:
-            score = score + 1
-            log.debug(score)
-        if len(password) >=10:
-            score = score + 1
-
-        if re.search('\d+',password):
-            score = score + 1
-        if re.search('[a-z]',password) and re.search('[A-Z]', password):
-            score = score + 1
-        if re.search('.[!,@,#,$,%,^,&,*,?,_,~,-,(,)]', password):
-            score = score + 1
-
-
-        if score <= 2:
-            errors['pw1'] = 'Password must be a strong password! The password must be minimum of eight alphanumeric characters including a number or symbol'
-            errors['general'] = 'Sorry, you have some bad data'
-
-        return raw_data, errors, values
-
 
     def update_password(self, values, initial_registration=None):
 
