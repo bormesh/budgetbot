@@ -73,12 +73,20 @@
     with: expensetrackvm,
     afterShow: expensetrackvm.initialize}"></div>
 
+<div data-bind="page:{
+    id: 'journal',
+    source: '/static/templates/journal.html',
+    with: journalvm,
+    afterShow: journalvm.initialize
+    }"></div>
 
 
 {% endblock main %}
 
 {% block scripts %}
 
+<script type="text/javascript"
+src="/static/viewmodels/journalviewmodel.js"></script>
 
 <script type="text/javascript"
 src="/static/viewmodels/budgetbotviewmodel.js"></script>

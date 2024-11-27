@@ -13,6 +13,7 @@ function BudgetBotViewModel (data) {
     self.aduslvm = new AddUserShoppingListViewModel({rootvm: self});
 
     self.expensetrackvm = new ExpenseTrackViewModel({rootvm: self});
+    self.journalvm = new JournalViewModel({rootvm: self});
 
     self.uavm = new UserAdminViewModel({rootvm: self})
 

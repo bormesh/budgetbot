@@ -67,9 +67,6 @@ class ExpensesPeopleAndCategories(Handler):
                 expense_categories=expense_categories,
                 message="People and categories"))
 
-
-
-
 class ShoppingListTemplate(Handler):
 
     route_strings = set(['GET /shopping-list'])
@@ -78,8 +75,6 @@ class ShoppingListTemplate(Handler):
     def handle(self, req):
 
         return Response.tmpl('budgetbot/shopping-list.html')
-
-
 
 class InsertExpense(Handler):
 
@@ -191,4 +186,114 @@ class AllExpenses(Handler):
                 message="People and categories"))
 
         """
+
+
+class GetTodayJournalEntry(Handler):
+
+    """
+
+    This gets today's journal entry
+
+    """
+
+    route_strings = set(['GET /api/journal/todays-entry'])
+    route = Handler.check_route_strings
+
+    @Handler.require_login
+    def handle(self, req):
+
+        pgconn = self.cw.get_pgconn()
+
+        cursor = pgconn.cursor()
+
+
+
+        cursor.execute("""
+
+            select * from
+
+            journal_entries
+
+            where person_uuid = %(person_uuid)s
+            and inserted::date = now()::date
+
+        """, {'person_uuid':req.user.person_uuid})
+
+        journal_entry = None
+        if cursor.rowcount:
+            journal_entry = cursor.fetchone()
+
+        return Response.json(dict(
+            reply_timestamp=datetime.datetime.now(),
+            success=True,
+            journal_id=journal_entry.journal_id if journal_entry else None,
+            entry=journal_entry.entry if journal_entry else None,
+            message="Todays Journal Entry"))
+
+
+class SaveTodayJournalEntry(Handler):
+
+    """
+
+    This gets today's journal entry
+
+    """
+
+    route_strings = set(['POST /api/journal/todays-entry'])
+    route = Handler.check_route_strings
+
+    @Handler.require_login
+    def handle(self, req):
+
+        pgconn = self.cw.get_pgconn()
+
+        cursor = pgconn.cursor()
+        journal_id = req.json.get('journal_id')
+
+        if journal_id:
+            cursor.execute("""
+
+                update journal_entries
+                set entry = %(entry)s
+
+                where person_uuid = %(person_uuid)s
+                and inserted::date = now()::date
+
+                returning entry, journal_id
+
+            """, {'person_uuid':req.user.person_uuid, 'entry':req.json.get('entry')})
+
+
+        else:
+            cursor.execute("""
+
+                insert into journal_entries
+                (entry, person_uuid)
+                values
+
+                (%(entry)s, %(person_uuid)s)
+
+                returning entry, journal_id
+
+            """, {'person_uuid':req.user.person_uuid, 'entry':req.json.get('entry')})
+
+        journal_entry = None
+        if cursor.rowcount:
+            journal_entry = cursor.fetchone()
+
+        return Response.json(dict(
+            reply_timestamp=datetime.datetime.now(),
+            success=True,
+            entry=journal_entry.entry if journal_entry else None,
+            journal_id=journal_entry.journal_id,
+            message="Saved Todays Journal Entry"))
+
+
+
+
+
+
+
+
+
 

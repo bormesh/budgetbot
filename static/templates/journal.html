@@ -1,0 +1,16 @@
+<!-- TODO -- look up and display current days entry -->
+
+<div class="row" style="padding:10px">
+<div class="col-12">
+    <h3 style="text-decoration:underline">Journal entry for <span data-bind="text:todays_date.toDateString()">{{date}}</span></h3>
+    <form role="form">
+        <textarea  data-bind="textInput:todays_entry.new_text"
+            rows="12" style="width:100%; outline:none; border:none; font-size:18px"></textarea>
+        <button data-bind="disable: todays_entry.new_text() == todays_entry.text(),
+            click:todays_entry.save">Save Changes</button>
+        <button data-bind="disable: todays_entry.new_text() == todays_entry.text(),
+                click:() => {todays_entry.new_text(todays_entry.text())}">
+                Discard Changes</button>
+    </form>
+</div>
+</div>
