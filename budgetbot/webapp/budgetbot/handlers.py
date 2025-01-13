@@ -217,6 +217,10 @@ class GetTodayJournalEntry(Handler):
             where person_uuid = %(person_uuid)s
             and inserted::date = now()::date
 
+            order by inserted desc
+
+            limit 1
+
         """, {'person_uuid':req.user.person_uuid})
 
         journal_entry = None
