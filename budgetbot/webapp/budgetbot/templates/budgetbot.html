@@ -80,6 +80,11 @@
     afterShow: journalvm.initialize
     }"></div>
 
+<div data-bind="page:{
+    id: 'passwords',
+    source: '/static/templates/password.html',
+    with: passvm
+    }"></div>
 
 {% endblock main %}
 
@@ -87,6 +92,9 @@
 
 <script type="text/javascript"
 src="/static/viewmodels/journalviewmodel.js"></script>
+
+<script type="text/javascript"
+src="/static/viewmodels/passwordviewmodel.js"></script>
 
 <script type="text/javascript"
 src="/static/viewmodels/budgetbotviewmodel.js"></script>

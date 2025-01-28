@@ -14,6 +14,7 @@ function BudgetBotViewModel (data) {
 
     self.expensetrackvm = new ExpenseTrackViewModel({rootvm: self});
     self.journalvm = new JournalViewModel({rootvm: self});
+    self.passvm = new PasswordViewModel({rootvm: self});
 
     self.uavm = new UserAdminViewModel({rootvm: self})
 
