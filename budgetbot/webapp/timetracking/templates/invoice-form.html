@@ -1,0 +1,367 @@
+{% extends "budgetbot/base.html" %}
+
+{% block title %}{% if invoice %}Edit Invoice{% else %}New Invoice{% endif %}{% endblock %}
+
+{% block main %}
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-12">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="/invoices">Invoices</a></li>
+          <li class="breadcrumb-item active">{% if invoice %}Edit Invoice{% else %}New Invoice{% endif %}</li>
+        </ol>
+      </nav>
+
+      <div class="card mb-4">
+        <div class="card-header">
+          <h3>{% if invoice %}Edit Invoice{% else %}New Invoice{% endif %}</h3>
+        </div>
+        <div class="card-body">
+          <form id="invoiceForm">
+            <div class="form-group row mb-3">
+              <label for="invoice_number" class="col-sm-3 col-form-label">Invoice Number</label>
+              <div class="col-sm-9">
+                <input type="text" class="form-control" id="invoice_number" name="invoice_number" 
+                      value="{{ invoice.invoice_number or '' }}">
+              </div>
+            </div>
+
+            <div class="form-group row mb-3">
+              <label for="project_uuid" class="col-sm-3 col-form-label">Project *</label>
+              <div class="col-sm-9">
+                <select class="form-control" id="project_uuid" name="project_uuid" required>
+                  <option value="">Select Project</option>
+                  {% for project in projects %}
+                    <option value="{{ project.project_uuid }}" 
+                           {% if selected_project_uuid and selected_project_uuid == project.project_uuid|string %}selected{% endif %}>
+                      {{ project.title }}
+                    </option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group row mb-3">
+              <label for="client_name" class="col-sm-3 col-form-label">Client Name *</label>
+              <div class="col-sm-9">
+                <input type="text" class="form-control" id="client_name" name="client_name" 
+                      value="{{ invoice.client_name or '' }}" required>
+              </div>
+            </div>
+
+            <div class="form-group row mb-3">
+              <label for="client_address" class="col-sm-3 col-form-label">Client Address</label>
+              <div class="col-sm-9">
+                <textarea class="form-control" id="client_address" name="client_address" 
+                         rows="3">{{ invoice.client_address or '' }}</textarea>
+              </div>
+            </div>
+
+            <div class="form-group row mb-3">
+              <label for="invoice_date" class="col-sm-3 col-form-label">Invoice Date</label>
+              <div class="col-sm-9">
+                <input type="date" class="form-control" id="invoice_date" name="invoice_date" 
+                      value="{{ invoice.invoice_date.strftime('%Y-%m-%d') if invoice and invoice.invoice_date else '' }}">
+              </div>
+            </div>
+
+            <div class="form-group row mb-3">
+              <label for="due_date" class="col-sm-3 col-form-label">Due Date</label>
+              <div class="col-sm-9">
+                <input type="date" class="form-control" id="due_date" name="due_date" 
+                      value="{{ invoice.due_date.strftime('%Y-%m-%d') if invoice and invoice.due_date else '' }}">
+              </div>
+            </div>
+
+            <div class="form-group row mb-3">
+              <label for="status" class="col-sm-3 col-form-label">Status</label>
+              <div class="col-sm-9">
+                <select class="form-control" id="status" name="status">
+                  <option value="draft" {% if invoice and invoice.status == 'draft' %}selected{% endif %}>Draft</option>
+                  <option value="sent" {% if invoice and invoice.status == 'sent' %}selected{% endif %}>Sent</option>
+                  <option value="paid" {% if invoice and invoice.status == 'paid' %}selected{% endif %}>Paid</option>
+                </select>
+              </div>
+            </div>
+
+            {% if invoice and invoice.status == 'paid' %}
+            <div class="form-group row mb-3">
+              <label for="paid_date" class="col-sm-3 col-form-label">Payment Date</label>
+              <div class="col-sm-9">
+                <input type="date" class="form-control" id="paid_date" name="paid_date" 
+                      value="{{ invoice.paid_date.strftime('%Y-%m-%d') if invoice and invoice.paid_date else '' }}">
+              </div>
+            </div>
+            {% endif %}
+
+            <div class="form-group row mb-3">
+              <label for="total_amount" class="col-sm-3 col-form-label">Total Amount</label>
+              <div class="col-sm-9">
+                <input type="number" step="0.01" class="form-control" id="total_amount" name="total_amount" 
+                      value="{{ invoice.total_amount or 0.00 }}">
+              </div>
+            </div>
+
+            <div class="form-group row mb-3">
+              <label for="notes" class="col-sm-3 col-form-label">Notes</label>
+              <div class="col-sm-9">
+                <textarea class="form-control" id="notes" name="notes" 
+                         rows="3">{{ invoice.notes or '' }}</textarea>
+              </div>
+            </div>
+
+            <div class="form-group row mb-3">
+              <label for="pdf_path" class="col-sm-3 col-form-label">PDF Path</label>
+              <div class="col-sm-9">
+                <input type="text" class="form-control" id="pdf_path" name="pdf_path" 
+                      value="{{ invoice.pdf_path or '' }}">
+              </div>
+            </div>
+
+            <div class="card mb-4">
+              <div class="card-header">
+                <h5>Time Entries</h5>
+              </div>
+              <div class="card-body">
+                <div id="timeEntriesList">
+                  <p class="text-center text-muted">Select a project to load time entries</p>
+                </div>
+                
+                <div class="form-group row mb-3">
+                  <label for="hourly_rate" class="col-sm-3 col-form-label">Hourly Rate ($)</label>
+                  <div class="col-sm-9">
+                    <input type="number" step="0.01" class="form-control" id="hourly_rate" name="hourly_rate" value="100.00">
+                  </div>
+                </div>
+                
+                <div class="form-check mb-3">
+                  <input class="form-check-input" type="checkbox" id="calculate_total" name="calculate_total">
+                  <label class="form-check-label" for="calculate_total">
+                    Calculate total from time entries
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group row">
+              <div class="col-sm-9 offset-sm-3">
+                <button type="submit" class="btn btn-primary">Save Invoice</button>
+                <a href="{% if invoice %}/invoices/{{ invoice.invoice_uuid }}{% else %}/invoices{% endif %}" class="btn btn-secondary">Cancel</a>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('invoiceForm');
+    const projectSelect = document.getElementById('project_uuid');
+    const timeEntriesList = document.getElementById('timeEntriesList');
+    let selectedTimeEntries = [];
+    
+    {% if invoice %}
+    // For edit mode, load the current time entries
+    loadInvoiceTimeEntries('{{ invoice.invoice_uuid }}');
+    {% endif %}
+    
+    // Load time entries when project changes
+    projectSelect.addEventListener('change', function() {
+      const projectUuid = this.value;
+      if (projectUuid) {
+        loadUnbilledTimeEntries(projectUuid);
+      } else {
+        timeEntriesList.innerHTML = '<p class="text-center text-muted">Select a project to load time entries</p>';
+      }
+    });
+    
+    // If a project is already selected, load time entries
+    if (projectSelect.value) {
+      loadUnbilledTimeEntries(projectSelect.value);
+    }
+    
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const formData = {
+        invoice_number: document.getElementById('invoice_number').value,
+        project_uuid: document.getElementById('project_uuid').value,
+        client_name: document.getElementById('client_name').value,
+        client_address: document.getElementById('client_address').value,
+        invoice_date: document.getElementById('invoice_date').value,
+        due_date: document.getElementById('due_date').value,
+        status: document.getElementById('status').value,
+        total_amount: document.getElementById('total_amount').value,
+        notes: document.getElementById('notes').value,
+        pdf_path: document.getElementById('pdf_path').value,
+        time_entry_uuids: selectedTimeEntries,
+        calculate_total: document.getElementById('calculate_total').checked,
+        hourly_rate: document.getElementById('hourly_rate').value
+      };
+      
+      // Include paid_date if visible
+      const paidDateEl = document.getElementById('paid_date');
+      if (paidDateEl && paidDateEl.value) {
+        formData.paid_date = paidDateEl.value;
+      }
+      
+      {% if invoice %}
+      // Update existing invoice
+      fetch('/api/invoices/{{ invoice.invoice_uuid }}/update', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          window.location.href = '/invoices/{{ invoice.invoice_uuid }}';
+        } else {
+          alert('Error: ' + data.message);
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while saving the invoice');
+      });
+      {% else %}
+      // Create new invoice
+      fetch('/api/invoices/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          window.location.href = '/invoices/' + data.invoice.invoice_uuid;
+        } else {
+          alert('Error: ' + data.message);
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while creating the invoice');
+      });
+      {% endif %}
+    });
+    
+    function loadUnbilledTimeEntries(projectUuid) {
+      fetch(`/api/projects/${projectUuid}/unbilled-time-entries`)
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            renderTimeEntries(data.time_entries);
+          } else {
+            timeEntriesList.innerHTML = `<div class="alert alert-danger">${data.message}</div>`;
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          timeEntriesList.innerHTML = '<div class="alert alert-danger">Error loading time entries</div>';
+        });
+    }
+    
+    function loadInvoiceTimeEntries(invoiceUuid) {
+      // For edit mode, load the time entries already on this invoice
+      fetch(`/invoices/${invoiceUuid}`)
+        .then(response => response.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(html, 'text/html');
+          const timeEntryRows = doc.querySelectorAll('[data-time-entry-uuid]');
+          
+          // Collect UUIDs of time entries on this invoice
+          selectedTimeEntries = Array.from(timeEntryRows).map(row => 
+            row.getAttribute('data-time-entry-uuid')
+          );
+          
+          // Now load unbilled time entries for the project
+          const projectUuid = document.getElementById('project_uuid').value;
+          if (projectUuid) {
+            loadUnbilledTimeEntries(projectUuid);
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+        });
+    }
+    
+    function renderTimeEntries(timeEntries) {
+      if (timeEntries.length === 0) {
+        timeEntriesList.innerHTML = '<div class="alert alert-info">No unbilled time entries found for this project</div>';
+        return;
+      }
+      
+      // Group time entries by person
+      const entriesByPerson = {};
+      timeEntries.forEach(entry => {
+        if (!entriesByPerson[entry.person_name]) {
+          entriesByPerson[entry.person_name] = [];
+        }
+        entriesByPerson[entry.person_name].push(entry);
+      });
+      
+      let html = '<div class="time-entries-container">';
+      
+      for (const personName in entriesByPerson) {
+        html += `<h6>${personName}</h6>`;
+        html += '<div class="table-responsive"><table class="table table-sm table-striped">';
+        html += '<thead><tr><th>Select</th><th>Date</th><th>Hours</th><th>Description</th></tr></thead>';
+        html += '<tbody>';
+        
+        entriesByPerson[personName].forEach(entry => {
+          const isSelected = selectedTimeEntries.includes(entry.time_entry_uuid);
+          html += `
+            <tr>
+              <td>
+                <div class="form-check">
+                  <input class="form-check-input time-entry-checkbox" type="checkbox" 
+                         value="${entry.time_entry_uuid}" 
+                         id="entry_${entry.time_entry_uuid}"
+                         ${isSelected ? 'checked' : ''}>
+                </div>
+              </td>
+              <td>${entry.entry_date}</td>
+              <td>${entry.hours_worked}</td>
+              <td>${entry.description || ''}</td>
+            </tr>
+          `;
+        });
+        
+        html += '</tbody></table></div>';
+      }
+      
+      html += '</div>';
+      timeEntriesList.innerHTML = html;
+      
+      // Add event listeners to checkboxes
+      document.querySelectorAll('.time-entry-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+          const entryUuid = this.value;
+          if (this.checked) {
+            if (!selectedTimeEntries.includes(entryUuid)) {
+              selectedTimeEntries.push(entryUuid);
+            }
+          } else {
+            const index = selectedTimeEntries.indexOf(entryUuid);
+            if (index !== -1) {
+              selectedTimeEntries.splice(index, 1);
+            }
+          }
+        });
+      });
+    }
+  });
+</script>
+
+{% endblock %}

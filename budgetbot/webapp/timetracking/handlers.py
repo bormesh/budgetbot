@@ -3,6 +3,7 @@
 import datetime
 import json
 import logging
+import re
 import textwrap
 import uuid
 
@@ -39,7 +40,7 @@ class ProjectDetailHandler(Handler):
     Handler for displaying a specific project's details.
     """
 
-    route_pattern = r'GET /projects/(?P<project_uuid>[0-9a-f-]+)/?$'
+    route_pattern = re.compile(r'GET /projects/(?P<project_uuid>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/?$')
 
     def route(self, req):
 
@@ -89,7 +90,7 @@ class ProjectEditFormHandler(Handler):
     Handler for the form to edit an existing project.
     """
 
-    route_pattern = r'GET /projects/(?P<project_uuid>[0-9a-f-]+)/edit/?$'
+    route_pattern = re.compile(r'GET /projects/(?P<project_uuid>[0-9a-f-]+)/edit/?$')
 
     def route(self, req):
 
@@ -166,7 +167,16 @@ class ProjectUpdateHandler(Handler):
     Handler for updating an existing project.
     """
 
-    route_pattern = r'/api/projects/(?P<project_uuid>[0-9a-f-]+)/update/?$'
+    route_pattern =\
+        re.compile(r'/api/projects/(?P<project_uuid>[0-9a-f-]+)/update/?$')
+
+    def route(self, req):
+
+        match = self.route_pattern == req.line_one
+
+        if match:
+            req['project_uuid'] = match.groupdict()['project_uuid']
+            return self.handle
 
     @Handler.require_login
     @Handler.require_json
@@ -219,11 +229,16 @@ class ProjectsApiListHandler(Handler):
     Handler for listing projects via API.
     """
 
-    route_pattern = r'/api/projects/list/?$'
+    route_pattern = re.compile(r'GET /api/projects/list/?$')
+    def route(self, req):
+        match = self.route_pattern == req.line_one
+
+        if match:
+            return self.handle
 
     @Handler.require_login
     def handle(self, req):
-        active_only = req.GET.get('active_only', 'true').lower() == 'true'
+        active_only = True #req.GET.get('active_only', 'true').lower() == 'true'
 
         try:
             all_projects = projects.Project.get_all(
@@ -269,11 +284,20 @@ class TimeEntryEditFormHandler(Handler):
     Handler for the form to edit an existing time entry.
     """
 
-    route_pattern = r'/time-entries/(?P<time_entry_uuid>[0-9a-f-]+)/edit/?$'
+    route_pattern =\
+    re.compile(r'GET /time-entries/(?P<time_entry_uuid>[0-9a-f-]+)/edit/?$')
+
+    def route(self, req):
+
+        match = self.route_pattern == req.line_one
+
+        if match:
+            req['time_entry_uuid'] = match.groupdict()['time_entry_uuid']
+            return self.handle
 
     @Handler.require_login
     def handle(self, req):
-        time_entry_uuid = req.match_info.get('time_entry_uuid')
+        time_entry_uuid = req['time_entry_uuid']
         if not time_entry_uuid:
             return self.not_found(req)
 
@@ -298,11 +322,11 @@ class TimeEntryEditFormHandler(Handler):
         j = self.cw.get_jinja2_environment()
         t = j.get_template('timetracking/time-entry-form.html')
 
-        return Response.tmpl(t, {
-            'user': req.user,
-            'time_entry': time_entry,
-            'projects': all_projects
-        })
+        return Response.tmpl(t,
+            user= req.user,
+            time_entry= time_entry,
+            projects= all_projects
+        )
 
 class TimeEntryCreateHandler(Handler):
     """
@@ -369,6 +393,15 @@ class TimeEntryUpdateHandler(Handler):
     """
 
     route_pattern = r'/api/time-entries/(?P<time_entry_uuid>[0-9a-f-]+)/update/?$'
+
+    def route(self, req):
+
+        match = self.route_pattern == req.line_one
+
+        if match:
+            req['time_entry_uuid'] = match.groupdict()['time_entry_uuid']
+            return self.handle
+
 
     @Handler.require_login
     @Handler.require_json
@@ -444,7 +477,16 @@ class TimeEntriesForProjectHandler(Handler):
     Handler for listing time entries for a specific project.
     """
 
-    route_pattern = r'/api/projects/(?P<project_uuid>[0-9a-f-]+)/time-entries/?$'
+    route_pattern =\
+    re.compile(r'/api/projects/(?P<project_uuid>[0-9a-f-]+)/time-entries/?$')
+
+    def route(self, req):
+
+        match = self.route_pattern == req.line_one
+
+        if match:
+            req['project_uuid'] = match.groupdict()['project_uuid']
+            return self.handle
 
     @Handler.require_login
     def handle(self, req):
