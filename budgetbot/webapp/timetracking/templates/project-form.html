@@ -1,0 +1,114 @@
+{% extends "budgetbot/base.html" %}
+
+{% block title %}{% if project %}Edit Project{% else %}New Project{% endif %}{% endblock %}
+
+{% block main %}
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-8 offset-md-2">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="/projects">Projects</a></li>
+          <li class="breadcrumb-item active">{% if project %}Edit Project{% else %}New Project{% endif %}</li>
+        </ol>
+      </nav>
+
+      <div class="card">
+        <div class="card-header">
+          <h3>{% if project %}Edit Project{% else %}New Project{% endif %}</h3>
+        </div>
+        <div class="card-body">
+          <form id="projectForm">
+            {% if project %}
+              <input type="hidden" id="project_uuid" value="{{ project.project_uuid }}">
+            {% endif %}
+
+            <div class="form-group">
+              <label for="title">Title *</label>
+              <input type="text" class="form-control" id="title" name="title" required
+                     value="{{ project.title if project else '' }}">
+            </div>
+
+            <div class="form-group">
+              <label for="description">Description</label>
+              <textarea class="form-control" id="description" name="description" rows="3">{{ project.description if project else '' }}</textarea>
+            </div>
+
+            {% if project %}
+              <div class="form-group">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="active" name="active"
+                         {% if project.active %}checked{% endif %}>
+                  <label class="form-check-label" for="active">Active</label>
+                </div>
+              </div>
+            {% endif %}
+
+            <div class="form-group">
+              <button type="submit" class="btn btn-primary">Save</button>
+              <a href="/projects" class="btn btn-secondary">Cancel</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const projectForm = document.getElementById('projectForm');
+
+    projectForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const title = document.getElementById('title').value;
+      const description = document.getElementById('description').value;
+
+      let apiUrl, method, data;
+
+      {% if project %}
+        const projectUuid = document.getElementById('project_uuid').value;
+        const active = document.getElementById('active').checked;
+
+        apiUrl = `/api/projects/${projectUuid}/update`;
+        method = 'POST';
+        data = {
+          title: title,
+          description: description,
+          active: active
+        };
+      {% else %}
+        apiUrl = '/api/projects/create';
+        method = 'POST';
+        data = {
+          title: title,
+          description: description
+        };
+      {% endif %}
+
+      fetch(apiUrl, {
+        method: method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          window.location.href = '/projects';
+        } else {
+          alert('Error: ' + data.message);
+        }
+      })
+      .catch((error) => {
+        console.error('Error:', error);
+        alert('An error occurred. Please try again.');
+      });
+    });
+  });
+</script>
+
+{% endblock %}

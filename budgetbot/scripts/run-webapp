@@ -25,6 +25,7 @@ else
     --bind 127.0.0.1:$PORT \
     --pid $PIDFILE \
     --timeout $WEBAPP_TIMEOUT \
+    --reload \
     budgetbot.configwrapper:ConfigWrapper.load_yaml\(\"$1\"\).build_webapp\(\)
 
 fi

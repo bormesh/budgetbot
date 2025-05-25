@@ -1,0 +1,141 @@
+{% extends "budgetbot/base.html" %}
+
+{% block title %}{% if time_entry %}Edit Time Entry{% else %}New Time Entry{% endif %}{% endblock %}
+
+{% block main %}
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-8 offset-md-2">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="/projects">Projects</a></li>
+          <li class="breadcrumb-item"><a href="/my-time-entries">My Time Entries</a></li>
+          <li class="breadcrumb-item active">{% if time_entry %}Edit Time Entry{% else %}New Time Entry{% endif %}</li>
+        </ol>
+      </nav>
+
+      <div class="card">
+        <div class="card-header">
+          <h3>{% if time_entry %}Edit Time Entry{% else %}New Time Entry{% endif %}</h3>
+        </div>
+        <div class="card-body">
+          <form id="timeEntryForm">
+            {% if time_entry %}
+              <input type="hidden" id="time_entry_uuid" value="{{ time_entry.time_entry_uuid }}">
+            {% endif %}
+
+            <div class="form-group">
+              <label for="project_uuid">Project *</label>
+              <select class="form-control" id="project_uuid" name="project_uuid" required>
+                <option value="">Select a project</option>
+                {% for project in projects %}
+                  <option value="{{ project.project_uuid }}"
+                          {% if time_entry and time_entry.project_uuid == project.project_uuid %}selected{% endif %}
+                          {% if not project.active %}disabled{% endif %}>
+                    {{ project.title }}{% if not project.active %} (Inactive){% endif %}
+                  </option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="hours_worked">Hours Worked *</label>
+              <input type="number" class="form-control" id="hours_worked" name="hours_worked"
+                     step="0.25" min="0.25" max="24" required
+                     value="{{ time_entry.hours_worked if time_entry else '1' }}">
+              <small class="form-text text-muted">Enter time in hours (e.g., 1.5 for 1 hour and 30 minutes)</small>
+            </div>
+
+            <div class="form-group">
+              <label for="entry_date">Date *</label>
+              <input type="date" class="form-control" id="entry_date" name="entry_date" required
+                     value="{{ time_entry.entry_date.strftime('%Y-%m-%d') if time_entry else '' }}">
+            </div>
+
+            <div class="form-group">
+              <label for="description">Description</label>
+              <textarea class="form-control" id="description" name="description" rows="3">{{ time_entry.description if time_entry else '' }}</textarea>
+            </div>
+
+            <div class="form-group">
+              <button type="submit" class="btn btn-primary">Save</button>
+              <a href="/my-time-entries" class="btn btn-secondary">Cancel</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const timeEntryForm = document.getElementById('timeEntryForm');
+
+    // Set default date to today for new entries
+    {% if not time_entry %}
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, '0');
+      const dd = String(today.getDate()).padStart(2, '0');
+      document.getElementById('entry_date').value = `${yyyy}-${mm}-${dd}`;
+
+      // Check if project is pre-selected from query parameter
+      const urlParams = new URLSearchParams(window.location.search);
+      const projectParam = urlParams.get('project');
+      if (projectParam) {
+        document.getElementById('project_uuid').value = projectParam;
+      }
+    {% endif %}
+
+    timeEntryForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const projectUuid = document.getElementById('project_uuid').value;
+      const hoursWorked = document.getElementById('hours_worked').value;
+      const entryDate = document.getElementById('entry_date').value;
+      const description = document.getElementById('description').value;
+
+      let apiUrl, method, data;
+
+      {% if time_entry %}
+        const timeEntryUuid = document.getElementById('time_entry_uuid').value;
+        apiUrl = `/api/time-entries/${timeEntryUuid}/update`;
+        method = 'POST';
+      {% else %}
+        apiUrl = '/api/time-entries/create';
+        method = 'POST';
+      {% endif %}
+
+      data = {
+        project_uuid: projectUuid,
+        hours_worked: hoursWorked,
+        entry_date: entryDate,
+        description: description
+      };
+
+      fetch(apiUrl, {
+        method: method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          window.location.href = '/my-time-entries';
+        } else {
+          alert('Error: ' + data.message);
+        }
+      })
+      .catch((error) => {
+        console.error('Error:', error);
+        alert('An error occurred. Please try again.');
+      });
+    });
+  });
+</script>
+
+{% endblock %}

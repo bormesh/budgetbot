@@ -1,0 +1,61 @@
+{% extends "budgetbot/base.html" %}
+
+{% block title %}My Time Entries{% endblock %}
+
+{% block main %}
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-12">
+      <h1>My Time Entries</h1>
+
+      <p>
+        <a href="/time-entries/new" class="btn btn-primary">
+          <i class="fa fa-plus"></i> Log Time
+        </a>
+        <a href="/projects" class="btn btn-secondary">
+          <i class="fa fa-list"></i> View Projects
+        </a>
+      </p>
+
+      {% if time_entries %}
+        <div class="table-responsive">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Project</th>
+                <th>Hours</th>
+                <th>Description</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for entry in time_entries %}
+                <tr>
+                  <td>{{ entry.entry_date.strftime('%Y-%m-%d') }}</td>
+                  <td>
+                    <a href="/projects/{{ entry.project_uuid }}">{{ entry.project_title }}</a>
+                  </td>
+                  <td>{{ entry.hours_worked }}</td>
+                  <td>{{ entry.description or '' }}</td>
+                  <td>
+                    <a href="/time-entries/{{ entry.time_entry_uuid }}/edit" class="btn btn-sm btn-warning">
+                      <i class="fa fa-edit"></i> Edit
+                    </a>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="alert alert-info">
+          No time entries found. Log time to a project to get started!
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+{% endblock %}

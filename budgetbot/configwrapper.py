@@ -57,6 +57,18 @@ class ConfigWrapper(configwrapper.ConfigWrapper):
         psycopg2.extras.register_composite('expense_categories_denormalized', pgconn,
           factory=ExpenseCategoriesDenormalizedFactory)
 
+        # Register project time tracking types
+        from budgetbot.pg.projects import ProjectFactory, TimeEntryFactory, \
+                                          TimeEntryWithDetailsFactory
+
+        psycopg2.extras.register_composite('projects', pgconn,
+          factory=ProjectFactory)
+
+        psycopg2.extras.register_composite('time_entries', pgconn,
+          factory=TimeEntryFactory)
+
+        psycopg2.extras.register_composite('time_entries_with_details', pgconn,
+          factory=TimeEntryWithDetailsFactory)
 
         log.info('Just registered composite types in psycopg2')
 

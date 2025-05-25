@@ -1,0 +1,59 @@
+{% extends 'budgetbot/base.html' %}
+
+{% block title %}Projects{% endblock %}
+
+{% block main %}
+<div class="container">
+  <div class="row">
+    <div class="col-md-12">
+      <h1>Projects</h1>
+
+      <p>
+        <a href="/projects/new" class="btn btn-primary">
+          <i class="fa fa-plus"></i> New Project
+        </a>
+      </p>
+
+      {% if projects %}
+        <div class="table-responsive">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Description</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for project in projects %}
+                <tr>
+                  <td>{{ project.title }}</td>
+                  <td>{{ project.description or '' }}</td>
+                  <td>{% if project.active %}Active{% else %}Inactive{% endif %}</td>
+                  <td>
+                    <a href="/projects/{{ project.project_uuid }}" class="btn btn-sm btn-info">
+                      <i class="fa fa-eye"></i> View
+                    </a>
+                    <a href="/projects/{{ project.project_uuid }}/edit" class="btn btn-sm btn-warning">
+                      <i class="fa fa-edit"></i> Edit
+                    </a>
+                    <a href="/time-entries/new?project={{ project.project_uuid }}" class="btn btn-sm btn-success">
+                      <i class="fa fa-clock"></i> Log Time
+                    </a>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="alert alert-info">
+          No projects found. Create a new project to get started!
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+{% endblock %}

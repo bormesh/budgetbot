@@ -5,14 +5,15 @@
 setup_script: initial-setup.sql
 
 script_order:
--   make-people-and-sessions-et-al-tables.sql
--   insert-test-users.sql
--   add-expenses.sql
--   add-expense-denormalized-view.sql
--   add-shopping-list.sql
--   make-webapp-sessions.sql
--   convert-id-to-uuid.sql
--   adjust-session-expires-time.sql
--   rewrite-shopping-list.sql
--   add-removed-shopping-list-column.sql
--   add-journal.sql
+#-   make-people-and-sessions-et-al-tables.sql
+#-   insert-test-users.sql
+#-   add-expenses.sql
+#-   add-expense-denormalized-view.sql
+#-   add-shopping-list.sql
+#-   make-webapp-sessions.sql
+#-   convert-id-to-uuid.sql
+#-   adjust-session-expires-time.sql
+#-   rewrite-shopping-list.sql
+#-   add-removed-shopping-list-column.sql
+#-   add-journal.sql
+-   add-projects-timetracking.sql
