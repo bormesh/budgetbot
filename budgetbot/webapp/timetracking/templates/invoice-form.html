@@ -23,8 +23,8 @@
             <div class="form-group row mb-3">
               <label for="invoice_number" class="col-sm-3 col-form-label">Invoice Number</label>
               <div class="col-sm-9">
-                <input type="text" class="form-control" id="invoice_number" name="invoice_number" 
-                      value="{{ invoice.invoice_number or '' }}">
+                <input type="text" class="form-control" id="invoice_number" name="invoice_number"
+                      value="{{ invoice.invoice_number if invoice else '' }}">
               </div>
             </div>
 
@@ -34,7 +34,7 @@
                 <select class="form-control" id="project_uuid" name="project_uuid" required>
                   <option value="">Select Project</option>
                   {% for project in projects %}
-                    <option value="{{ project.project_uuid }}" 
+                    <option value="{{ project.project_uuid }}"
                            {% if selected_project_uuid and selected_project_uuid == project.project_uuid|string %}selected{% endif %}>
                       {{ project.title }}
                     </option>
@@ -46,23 +46,24 @@
             <div class="form-group row mb-3">
               <label for="client_name" class="col-sm-3 col-form-label">Client Name *</label>
               <div class="col-sm-9">
-                <input type="text" class="form-control" id="client_name" name="client_name" 
-                      value="{{ invoice.client_name or '' }}" required>
+                <input type="text" class="form-control" id="client_name" name="client_name"
+                      value="{{ invoice.client_name if invoice else '' }}" required>
               </div>
             </div>
 
             <div class="form-group row mb-3">
               <label for="client_address" class="col-sm-3 col-form-label">Client Address</label>
               <div class="col-sm-9">
-                <textarea class="form-control" id="client_address" name="client_address" 
-                         rows="3">{{ invoice.client_address or '' }}</textarea>
+                <textarea class="form-control" id="client_address" name="client_address"
+                         rows="3">{{ invoice.client_address if invoice
+else '' }}</textarea>
               </div>
             </div>
 
             <div class="form-group row mb-3">
               <label for="invoice_date" class="col-sm-3 col-form-label">Invoice Date</label>
               <div class="col-sm-9">
-                <input type="date" class="form-control" id="invoice_date" name="invoice_date" 
+                <input type="date" class="form-control" id="invoice_date" name="invoice_date"
                       value="{{ invoice.invoice_date.strftime('%Y-%m-%d') if invoice and invoice.invoice_date else '' }}">
               </div>
             </div>
@@ -70,7 +71,7 @@
             <div class="form-group row mb-3">
               <label for="due_date" class="col-sm-3 col-form-label">Due Date</label>
               <div class="col-sm-9">
-                <input type="date" class="form-control" id="due_date" name="due_date" 
+                <input type="date" class="form-control" id="due_date" name="due_date"
                       value="{{ invoice.due_date.strftime('%Y-%m-%d') if invoice and invoice.due_date else '' }}">
               </div>
             </div>
@@ -90,7 +91,7 @@
             <div class="form-group row mb-3">
               <label for="paid_date" class="col-sm-3 col-form-label">Payment Date</label>
               <div class="col-sm-9">
-                <input type="date" class="form-control" id="paid_date" name="paid_date" 
+                <input type="date" class="form-control" id="paid_date" name="paid_date"
                       value="{{ invoice.paid_date.strftime('%Y-%m-%d') if invoice and invoice.paid_date else '' }}">
               </div>
             </div>
@@ -99,24 +100,40 @@
             <div class="form-group row mb-3">
               <label for="total_amount" class="col-sm-3 col-form-label">Total Amount</label>
               <div class="col-sm-9">
-                <input type="number" step="0.01" class="form-control" id="total_amount" name="total_amount" 
-                      value="{{ invoice.total_amount or 0.00 }}">
+                <input type="number" step="0.01" class="form-control" id="total_amount" name="total_amount"
+                      value="{{ invoice.total_amount if invoice else 0.00 }}">
               </div>
             </div>
 
             <div class="form-group row mb-3">
               <label for="notes" class="col-sm-3 col-form-label">Notes</label>
               <div class="col-sm-9">
-                <textarea class="form-control" id="notes" name="notes" 
-                         rows="3">{{ invoice.notes or '' }}</textarea>
+                <textarea class="form-control" id="notes" name="notes"
+                         rows="3">{{ invoice.notes if invoice else '' }}</textarea>
               </div>
             </div>
 
             <div class="form-group row mb-3">
-              <label for="pdf_path" class="col-sm-3 col-form-label">PDF Path</label>
+              <label class="col-sm-3 col-form-label">PDF Invoice</label>
               <div class="col-sm-9">
-                <input type="text" class="form-control" id="pdf_path" name="pdf_path" 
-                      value="{{ invoice.pdf_path or '' }}">
+                {% if invoice and invoice.pdf_path %}
+                  <div class="d-flex align-items-center mb-2">
+                    <a href="{{ pdf_url }}" target="_blank" class="btn btn-sm btn-outline-primary me-2">
+                      <i class="fa fa-file-pdf"></i> View PDF
+                    </a>
+                    <button type="button" id="deletePdfBtn" class="btn btn-sm btn-outline-danger">
+                      <i class="fa fa-trash"></i> Delete PDF
+                    </button>
+                  </div>
+                {% endif %}
+
+                <div class="custom-file">
+                  <input type="file" class="form-control" id="pdf_file" accept=".pdf">
+                  <small class="form-text text-muted">Upload a PDF invoice (optional). Max size: 10MB</small>
+                </div>
+
+                <!-- Hidden field to maintain the pdf_path for form submission -->
+                <input type="hidden" id="pdf_path" name="pdf_path" value="{{ invoice.pdf_path if invoice and invoice.pdf_path else '' }}">
               </div>
             </div>
 
@@ -128,14 +145,14 @@
                 <div id="timeEntriesList">
                   <p class="text-center text-muted">Select a project to load time entries</p>
                 </div>
-                
+
                 <div class="form-group row mb-3">
                   <label for="hourly_rate" class="col-sm-3 col-form-label">Hourly Rate ($)</label>
                   <div class="col-sm-9">
                     <input type="number" step="0.01" class="form-control" id="hourly_rate" name="hourly_rate" value="100.00">
                   </div>
                 </div>
-                
+
                 <div class="form-check mb-3">
                   <input class="form-check-input" type="checkbox" id="calculate_total" name="calculate_total">
                   <label class="form-check-label" for="calculate_total">
@@ -163,13 +180,15 @@
     const form = document.getElementById('invoiceForm');
     const projectSelect = document.getElementById('project_uuid');
     const timeEntriesList = document.getElementById('timeEntriesList');
+    const pdfFileInput = document.getElementById('pdf_file');
+    const deletePdfBtn = document.getElementById('deletePdfBtn');
     let selectedTimeEntries = [];
-    
+
     {% if invoice %}
     // For edit mode, load the current time entries
     loadInvoiceTimeEntries('{{ invoice.invoice_uuid }}');
     {% endif %}
-    
+
     // Load time entries when project changes
     projectSelect.addEventListener('change', function() {
       const projectUuid = this.value;
@@ -179,15 +198,95 @@
         timeEntriesList.innerHTML = '<p class="text-center text-muted">Select a project to load time entries</p>';
       }
     });
-    
+
     // If a project is already selected, load time entries
     if (projectSelect.value) {
       loadUnbilledTimeEntries(projectSelect.value);
     }
-    
+
+    // Handle PDF delete button
+    if (deletePdfBtn) {
+      deletePdfBtn.addEventListener('click', function() {
+        if (confirm('Are you sure you want to delete the attached PDF?')) {
+          {% if invoice %}
+          fetch('/api/invoices/{{ invoice.invoice_uuid }}/delete-pdf', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({})
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              // Update hidden field
+              document.getElementById('pdf_path').value = '';
+              // Hide the PDF controls
+              deletePdfBtn.parentElement.style.display = 'none';
+              // Show success message
+              alert('PDF deleted successfully');
+            } else {
+              alert('Error: ' + data.message);
+            }
+          })
+          .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while deleting the PDF');
+          });
+          {% endif %}
+        }
+      });
+    }
+
+    // Handle form submission
     form.addEventListener('submit', function(e) {
       e.preventDefault();
-      
+
+      // Check if we have a file to upload first
+      if (pdfFileInput.files.length > 0) {
+        // We have a PDF to upload
+        uploadPdf().then(proceed);
+      } else {
+        // No PDF to upload, proceed with normal form submission
+        proceed();
+      }
+    });
+
+    function uploadPdf() {
+      return new Promise((resolve, reject) => {
+        {% if invoice %}
+        const file = pdfFileInput.files[0];
+        const formData = new FormData();
+        formData.append('pdf_file', file);
+
+        fetch('/api/invoices/{{ invoice.invoice_uuid }}/upload-pdf', {
+          method: 'POST',
+          body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            // Update the hidden pdf_path field with the new filename
+            document.getElementById('pdf_path').value = data.invoice.pdf_path;
+            resolve();
+          } else {
+            alert('Error uploading PDF: ' + data.message);
+            reject(new Error(data.message));
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          alert('An error occurred while uploading the PDF');
+          reject(error);
+        });
+        {% else %}
+        // For new invoices, we'll handle the PDF upload after creating the invoice
+        resolve();
+        {% endif %}
+      });
+    }
+
+    function proceed() {
       const formData = {
         invoice_number: document.getElementById('invoice_number').value,
         project_uuid: document.getElementById('project_uuid').value,
@@ -203,13 +302,13 @@
         calculate_total: document.getElementById('calculate_total').checked,
         hourly_rate: document.getElementById('hourly_rate').value
       };
-      
+
       // Include paid_date if visible
       const paidDateEl = document.getElementById('paid_date');
       if (paidDateEl && paidDateEl.value) {
         formData.paid_date = paidDateEl.value;
       }
-      
+
       {% if invoice %}
       // Update existing invoice
       fetch('/api/invoices/{{ invoice.invoice_uuid }}/update', {
@@ -243,7 +342,35 @@
       .then(response => response.json())
       .then(data => {
         if (data.success) {
-          window.location.href = '/invoices/' + data.invoice.invoice_uuid;
+          // If we have a PDF to upload
+          if (pdfFileInput.files.length > 0) {
+            const file = pdfFileInput.files[0];
+            const formData = new FormData();
+            formData.append('pdf_file', file);
+
+            // Upload the PDF to the newly created invoice
+            fetch(`/api/invoices/${data.invoice.invoice_uuid}/upload-pdf`, {
+              method: 'POST',
+              body: formData
+            })
+            .then(response => response.json())
+            .then(uploadData => {
+              if (uploadData.success) {
+                window.location.href = '/invoices/' + data.invoice.invoice_uuid;
+              } else {
+                alert('Invoice created but PDF upload failed: ' + uploadData.message);
+                window.location.href = '/invoices/' + data.invoice.invoice_uuid;
+              }
+            })
+            .catch(error => {
+              console.error('Error uploading PDF:', error);
+              alert('Invoice created but PDF upload failed');
+              window.location.href = '/invoices/' + data.invoice.invoice_uuid;
+            });
+          } else {
+            // No PDF to upload, just redirect
+            window.location.href = '/invoices/' + data.invoice.invoice_uuid;
+          }
         } else {
           alert('Error: ' + data.message);
         }
@@ -253,8 +380,8 @@
         alert('An error occurred while creating the invoice');
       });
       {% endif %}
-    });
-    
+    }
+
     function loadUnbilledTimeEntries(projectUuid) {
       fetch(`/api/projects/${projectUuid}/unbilled-time-entries`)
         .then(response => response.json())
@@ -270,7 +397,7 @@
           timeEntriesList.innerHTML = '<div class="alert alert-danger">Error loading time entries</div>';
         });
     }
-    
+
     function loadInvoiceTimeEntries(invoiceUuid) {
       // For edit mode, load the time entries already on this invoice
       fetch(`/invoices/${invoiceUuid}`)
@@ -279,12 +406,12 @@
           const parser = new DOMParser();
           const doc = parser.parseFromString(html, 'text/html');
           const timeEntryRows = doc.querySelectorAll('[data-time-entry-uuid]');
-          
+
           // Collect UUIDs of time entries on this invoice
-          selectedTimeEntries = Array.from(timeEntryRows).map(row => 
+          selectedTimeEntries = Array.from(timeEntryRows).map(row =>
             row.getAttribute('data-time-entry-uuid')
           );
-          
+
           // Now load unbilled time entries for the project
           const projectUuid = document.getElementById('project_uuid').value;
           if (projectUuid) {
@@ -295,13 +422,13 @@
           console.error('Error:', error);
         });
     }
-    
+
     function renderTimeEntries(timeEntries) {
       if (timeEntries.length === 0) {
         timeEntriesList.innerHTML = '<div class="alert alert-info">No unbilled time entries found for this project</div>';
         return;
       }
-      
+
       // Group time entries by person
       const entriesByPerson = {};
       timeEntries.forEach(entry => {
@@ -310,23 +437,23 @@
         }
         entriesByPerson[entry.person_name].push(entry);
       });
-      
+
       let html = '<div class="time-entries-container">';
-      
+
       for (const personName in entriesByPerson) {
         html += `<h6>${personName}</h6>`;
         html += '<div class="table-responsive"><table class="table table-sm table-striped">';
         html += '<thead><tr><th>Select</th><th>Date</th><th>Hours</th><th>Description</th></tr></thead>';
         html += '<tbody>';
-        
+
         entriesByPerson[personName].forEach(entry => {
           const isSelected = selectedTimeEntries.includes(entry.time_entry_uuid);
           html += `
             <tr>
               <td>
                 <div class="form-check">
-                  <input class="form-check-input time-entry-checkbox" type="checkbox" 
-                         value="${entry.time_entry_uuid}" 
+                  <input class="form-check-input time-entry-checkbox" type="checkbox"
+                         value="${entry.time_entry_uuid}"
                          id="entry_${entry.time_entry_uuid}"
                          ${isSelected ? 'checked' : ''}>
                 </div>
@@ -337,13 +464,13 @@
             </tr>
           `;
         });
-        
+
         html += '</tbody></table></div>';
       }
-      
+
       html += '</div>';
       timeEntriesList.innerHTML = html;
-      
+
       // Add event listeners to checkboxes
       document.querySelectorAll('.time-entry-checkbox').forEach(checkbox => {
         checkbox.addEventListener('change', function() {

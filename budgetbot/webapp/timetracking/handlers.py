@@ -58,13 +58,45 @@ class ProjectDetailHandler(Handler):
         except KeyError:
             return self.not_found(req)
 
-        time_entries = projects.TimeEntryWithDetails.for_project(
+        # Get all time entries for this project
+        all_time_entries = projects.TimeEntryWithDetails.for_project(
             self.cw.get_pgconn(), project_uuid)
+
+        # Get invoices for this project
+        from budgetbot.pg import invoices
+        project_invoices = invoices.InvoiceWithDetails.get_all(
+            self.cw.get_pgconn(), project_uuid=project_uuid)
+
+        # Separate billed and unbilled time entries
+        import textwrap
+        sql = textwrap.dedent("""
+            select time_entry_uuid
+            from invoice_time_entries
+            join time_entries using (time_entry_uuid)
+            where project_uuid = %(project_uuid)s
+        """)
+
+        with self.cw.get_pgconn().cursor() as cur:
+            cur.execute(sql, {'project_uuid': project_uuid})
+            billed_entry_uuids = {row[0] for row in cur.fetchall()}
+
+        unbilled_time_entries = [
+            te for te in all_time_entries
+            if te.time_entry_uuid not in billed_entry_uuids
+        ]
+
+        billed_time_entries = [
+            te for te in all_time_entries
+            if te.time_entry_uuid in billed_entry_uuids
+        ]
 
         return Response.tmpl('timetracking/project-detail.html',
             user= req.user,
             project= project,
-            time_entries= time_entries
+            unbilled_time_entries= unbilled_time_entries,
+            billed_time_entries= billed_time_entries,
+            all_time_entries= all_time_entries,
+            invoices=project_invoices
         )
 
 class ProjectNewFormHandler(Handler):
@@ -102,7 +134,7 @@ class ProjectEditFormHandler(Handler):
 
     @Handler.require_login
     def handle(self, req):
-        project_uuid = req.match_info.get('project_uuid')
+        project_uuid = req['project_uuid']
         if not project_uuid:
             return self.not_found(req)
 
@@ -181,7 +213,7 @@ class ProjectUpdateHandler(Handler):
     @Handler.require_login
     @Handler.require_json
     def handle(self, req):
-        project_uuid = req.match_info.get('project_uuid')
+        project_uuid = req['project_uuid']
         if not project_uuid:
             return Response.json({
                 'success': False,
@@ -406,7 +438,7 @@ class TimeEntryUpdateHandler(Handler):
     @Handler.require_login
     @Handler.require_json
     def handle(self, req):
-        time_entry_uuid = req.match_info.get('time_entry_uuid')
+        time_entry_uuid = re['time_entry_uuid']
         if not time_entry_uuid:
             return Response.json({
                 'success': False,
@@ -490,7 +522,7 @@ class TimeEntriesForProjectHandler(Handler):
 
     @Handler.require_login
     def handle(self, req):
-        project_uuid = req.match_info.get('project_uuid')
+        project_uuid = req['project_uuid']
         if not project_uuid:
             return Response.json({
                 'success': False,

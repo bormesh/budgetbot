@@ -1,0 +1,188 @@
+{% extends "budgetbot/base.html" %}
+
+{% block title %}Invoices{% endblock %}
+
+{% block main %}
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Invoices</h2>
+        <a href="/invoices/new" class="btn btn-primary">
+          <i class="fa fa-plus"></i> New Invoice
+        </a>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="row">
+            <div class="col-md-12">
+              <form id="filterForm" class="row g-3">
+                <div class="col-md-4">
+                  <label for="filter-project" class="form-label">Project</label>
+                  <select id="filter-project" class="form-control">
+                    <option value="">All Projects</option>
+                    <!-- Will be populated by JavaScript -->
+                  </select>
+                </div>
+                <div class="col-md-4">
+                  <label for="filter-status" class="form-label">Status</label>
+                  <select id="filter-status" class="form-control">
+                    <option value="">All Statuses</option>
+                    <option value="draft">Draft</option>
+                    <option value="sent">Sent</option>
+                    <option value="paid">Paid</option>
+                  </select>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">&nbsp;</label>
+                  <button type="submit" class="btn btn-secondary form-control">Filter</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          {% if invoices %}
+            <div class="table-responsive">
+              <table class="table table-striped">
+                <thead>
+                  <tr>
+                    <th>Invoice #</th>
+                    <th>Project</th>
+                    <th>Client</th>
+                    <th>Date</th>
+                    <th>Due Date</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for invoice in invoices %}
+                    <tr>
+                      <td>{{ invoice.invoice_number or 'N/A' }}</td>
+                      <td>{{ invoice.project_title }}</td>
+                      <td>{{ invoice.client_name }}</td>
+                      <td>{{ invoice.invoice_date.strftime('%Y-%m-%d') if invoice.invoice_date else 'N/A' }}</td>
+                      <td>{{ invoice.due_date.strftime('%Y-%m-%d') if invoice.due_date else 'N/A' }}</td>
+                      <td>${{ "%.2f"|format(invoice.total_amount) }}</td>
+                      <td>
+                        <span class="badge bg-{{ 'secondary' if invoice.status == 'draft' else 'primary' if invoice.status == 'sent' else 'success' if invoice.status == 'paid' else 'secondary' }}">
+                          {{ invoice.status|capitalize }}
+                        </span>
+                      </td>
+                      <td>
+                        <div class="btn-group btn-group-sm">
+                          <a href="/invoices/{{ invoice.invoice_uuid }}" class="btn btn-info">
+                            <i class="fa fa-eye"></i>
+                          </a>
+                          <a href="/invoices/{{ invoice.invoice_uuid }}/edit" class="btn btn-warning">
+                            <i class="fa fa-edit"></i>
+                          </a>
+                          {% if invoice.status != 'paid' %}
+                          <button type="button" class="btn btn-success mark-paid-btn" data-invoice-uuid="{{ invoice.invoice_uuid }}">
+                            <i class="fa fa-check"></i>
+                          </button>
+                          {% endif %}
+                        </div>
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          {% else %}
+            <div class="alert alert-info">
+              No invoices found. <a href="/invoices/new">Create a new invoice</a>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Load projects for filter
+    fetch('/api/projects/list')
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          const projectSelect = document.getElementById('filter-project');
+          data.projects.forEach(project => {
+            const option = document.createElement('option');
+            option.value = project.project_uuid;
+            option.textContent = project.title;
+            projectSelect.appendChild(option);
+          });
+        }
+      })
+      .catch(error => console.error('Error loading projects:', error));
+
+    // Handle mark as paid buttons
+    document.querySelectorAll('.mark-paid-btn').forEach(button => {
+      button.addEventListener('click', function() {
+        const invoiceUuid = this.getAttribute('data-invoice-uuid');
+        if (confirm('Mark this invoice as paid?')) {
+          fetch(`/api/invoices/${invoiceUuid}/mark-paid`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ paid_date: new Date().toISOString().split('T')[0] })
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              window.location.reload();
+            } else {
+              alert(`Error: ${data.message}`);
+            }
+          })
+          .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while marking the invoice as paid');
+          });
+        }
+      });
+    });
+
+    // Handle filter form
+    document.getElementById('filterForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const projectUuid = document.getElementById('filter-project').value;
+      const status = document.getElementById('filter-status').value;
+      
+      let url = '/api/invoices/list?';
+      if (projectUuid) {
+        url += `project_uuid=${projectUuid}&`;
+      }
+      if (status) {
+        url += `status=${status}&`;
+      }
+      
+      fetch(url)
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            // Redirect to this page with filter parameters
+            let redirectUrl = '/invoices?';
+            if (projectUuid) {
+              redirectUrl += `project=${projectUuid}&`;
+            }
+            if (status) {
+              redirectUrl += `status=${status}&`;
+            }
+            window.location.href = redirectUrl;
+          }
+        })
+        .catch(error => console.error('Error applying filters:', error));
+    });
+  });
+</script>
+
+{% endblock %}

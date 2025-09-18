@@ -32,50 +32,291 @@
             <a href="/time-entries/new?project={{ project.project_uuid }}" class="btn btn-success">
               <i class="fa fa-clock"></i> Log Time
             </a>
+            <a href="/invoices/new?project={{ project.project_uuid }}" class="btn btn-primary">
+              <i class="fa fa-file-invoice-dollar"></i> Create Invoice
+            </a>
           </div>
         </div>
       </div>
 
-      <h3>Time Entries</h3>
+      <!-- Invoices Section -->
+      <div class="card mb-4" id="invoices-section">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h3>Invoices</h3>
+          <a href="/invoices/new?project={{ project.project_uuid }}" class="btn btn-sm btn-primary">
+            <i class="fa fa-plus"></i> New Invoice
+          </a>
+        </div>
+        <div class="card-body">
+          {% if invoices %}
+            <div class="table-responsive">
+              <table class="table table-striped">
+                <thead>
+                  <tr>
+                    <th>Invoice #</th>
+                    <th>Client</th>
+                    <th>Date</th>
+                    <th>Due Date</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for invoice in invoices %}
+                    <tr>
+                      <td>{{ invoice.invoice_number or 'N/A' }}</td>
+                      <td>{{ invoice.client_name }}</td>
+                      <td>{{ invoice.invoice_date.strftime('%Y-%m-%d') if invoice.invoice_date else 'N/A' }}</td>
+                      <td>{{ invoice.due_date.strftime('%Y-%m-%d') if invoice.due_date else 'N/A' }}</td>
+                      <td>${{ "%.2f"|format(invoice.total_amount) }}</td>
+                      <td>
+                        <span class="badge bg-{{ 'secondary' if invoice.status == 'draft' else 'primary' if invoice.status == 'sent' else 'success' if invoice.status == 'paid' else 'secondary' }}">
+                          {{ invoice.status|capitalize }}
+                        </span>
+                      </td>
+                      <td>
+                        <div class="btn-group btn-group-sm">
+                          <a href="/invoices/{{ invoice.invoice_uuid }}" class="btn btn-info">
+                            <i class="fa fa-eye"></i>
+                          </a>
+                          <a href="/invoices/{{ invoice.invoice_uuid }}/edit" class="btn btn-warning">
+                            <i class="fa fa-edit"></i>
+                          </a>
+                        </div>
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          {% else %}
+            <div class="alert alert-info">
+              No invoices found for this project. <a href="/invoices/new?project={{ project.project_uuid }}">Create a new invoice</a>
+            </div>
+          {% endif %}
+        </div>
+      </div>
 
-      {% if time_entries %}
-        <div class="table-responsive">
-          <table class="table table-striped">
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Person</th>
-                <th>Hours</th>
-                <th>Description</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for entry in time_entries %}
-                <tr>
-                  <td>{{ entry.entry_date.strftime('%Y-%m-%d') }}</td>
-                  <td>{{ entry.person_name }}</td>
-                  <td>{{ entry.hours_worked }}</td>
-                  <td>{{ entry.description or '' }}</td>
-                  <td>
-                    {% if entry.person_uuid == user.person_uuid %}
-                      <a href="/time-entries/{{ entry.time_entry_uuid }}/edit" class="btn btn-sm btn-warning">
-                        <i class="fa fa-edit"></i> Edit
-                      </a>
-                    {% endif %}
-                  </td>
-                </tr>
-              {% endfor %}
-            </tbody>
-          </table>
+      <!-- Time Entries Section -->
+      <div class="card mb-4" id="time-entries-section">
+        <div class="card-header">
+          <div class="d-flex justify-content-between align-items-center">
+            <h3>Time Entries</h3>
+            <a href="/time-entries/new?project={{ project.project_uuid }}" class="btn btn-sm btn-success">
+              <i class="fa fa-plus"></i> Log Time
+            </a>
+          </div>
+          
+          <!-- Filter Controls -->
+          <div class="mt-3">
+            <ul class="nav nav-tabs" id="timeEntryTabs" role="tablist">
+              <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="unbilled-tab" data-bs-toggle="tab" data-bs-target="#unbilled-entries" type="button" role="tab">
+                  <i class="fa fa-clock text-warning"></i> Unbilled ({{ unbilled_time_entries|length }})
+                </button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link" id="billed-tab" data-bs-toggle="tab" data-bs-target="#billed-entries" type="button" role="tab">
+                  <i class="fa fa-check text-success"></i> Billed ({{ billed_time_entries|length }})
+                </button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link" id="all-tab" data-bs-toggle="tab" data-bs-target="#all-entries" type="button" role="tab">
+                  <i class="fa fa-list"></i> All ({{ all_time_entries|length }})
+                </button>
+              </li>
+            </ul>
+          </div>
         </div>
-      {% else %}
-        <div class="alert alert-info">
-          No time entries found for this project.
+        
+        <div class="card-body">
+          {% if all_time_entries %}
+            <div class="tab-content" id="timeEntryTabContent">
+              <!-- Unbilled Time Entries -->
+              <div class="tab-pane show active" id="unbilled-entries" role="tabpanel" style="display: block;">
+                {% if unbilled_time_entries %}
+                  <div class="table-responsive">
+                    <table class="table table-striped">
+                      <thead>
+                        <tr>
+                          <th>Date</th>
+                          <th>Person</th>
+                          <th>Hours</th>
+                          <th>Description</th>
+                          <th>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% for entry in unbilled_time_entries %}
+                          <tr>
+                            <td>{{ entry.entry_date.strftime('%Y-%m-%d') }}</td>
+                            <td>{{ entry.person_name }}</td>
+                            <td>{{ entry.hours_worked }}</td>
+                            <td>{{ entry.description or '' }}</td>
+                            <td>
+                              {% if entry.person_uuid == user.person_uuid %}
+                                <a href="/time-entries/{{ entry.time_entry_uuid }}/edit" class="btn btn-sm btn-warning">
+                                  <i class="fa fa-edit"></i> Edit
+                                </a>
+                              {% endif %}
+                            </td>
+                          </tr>
+                        {% endfor %}
+                      </tbody>
+                      <tfoot>
+                        <tr>
+                          <th colspan="2" class="text-end">Unbilled Hours:</th>
+                          <th>{{ unbilled_time_entries|sum(attribute='hours_worked') }}</th>
+                          <td colspan="2"></td>
+                        </tr>
+                      </tfoot>
+                    </table>
+                  </div>
+                {% else %}
+                  <div class="alert alert-success">
+                    <i class="fa fa-check-circle"></i> All time entries for this project have been billed!
+                  </div>
+                {% endif %}
+              </div>
+
+              <!-- Billed Time Entries -->
+              <div class="tab-pane" id="billed-entries" role="tabpanel" style="display: none;">
+                {% if billed_time_entries %}
+                  <div class="table-responsive">
+                    <table class="table table-striped">
+                      <thead>
+                        <tr>
+                          <th>Date</th>
+                          <th>Person</th>
+                          <th>Hours</th>
+                          <th>Description</th>
+                          <th>Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% for entry in billed_time_entries %}
+                          <tr>
+                            <td>{{ entry.entry_date.strftime('%Y-%m-%d') }}</td>
+                            <td>{{ entry.person_name }}</td>
+                            <td>{{ entry.hours_worked }}</td>
+                            <td>{{ entry.description or '' }}</td>
+                            <td>
+                              <span class="badge bg-success">
+                                <i class="fa fa-check"></i> Billed
+                              </span>
+                            </td>
+                          </tr>
+                        {% endfor %}
+                      </tbody>
+                      <tfoot>
+                        <tr>
+                          <th colspan="2" class="text-end">Billed Hours:</th>
+                          <th>{{ billed_time_entries|sum(attribute='hours_worked') }}</th>
+                          <td colspan="2"></td>
+                        </tr>
+                      </tfoot>
+                    </table>
+                  </div>
+                {% else %}
+                  <div class="alert alert-info">
+                    No billed time entries found for this project.
+                  </div>
+                {% endif %}
+              </div>
+
+              <!-- All Time Entries -->
+              <div class="tab-pane" id="all-entries" role="tabpanel" style="display: none;">
+                <div class="table-responsive">
+                  <table class="table table-striped">
+                    <thead>
+                      <tr>
+                        <th>Date</th>
+                        <th>Person</th>
+                        <th>Hours</th>
+                        <th>Description</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for entry in all_time_entries %}
+                        <tr>
+                          <td>{{ entry.entry_date.strftime('%Y-%m-%d') }}</td>
+                          <td>{{ entry.person_name }}</td>
+                          <td>{{ entry.hours_worked }}</td>
+                          <td>{{ entry.description or '' }}</td>
+                          <td>
+                            {% if entry.time_entry_uuid in billed_time_entries|map(attribute='time_entry_uuid')|list %}
+                              <span class="badge bg-success">
+                                <i class="fa fa-check"></i> Billed
+                              </span>
+                            {% else %}
+                              <span class="badge bg-warning">
+                                <i class="fa fa-clock"></i> Unbilled
+                              </span>
+                            {% endif %}
+                          </td>
+                          <td>
+                            {% if entry.person_uuid == user.person_uuid and entry.time_entry_uuid not in billed_time_entries|map(attribute='time_entry_uuid')|list %}
+                              <a href="/time-entries/{{ entry.time_entry_uuid }}/edit" class="btn btn-sm btn-warning">
+                                <i class="fa fa-edit"></i> Edit
+                              </a>
+                            {% endif %}
+                          </td>
+                        </tr>
+                      {% endfor %}
+                    </tbody>
+                    <tfoot>
+                      <tr>
+                        <th colspan="2" class="text-end">Total Hours:</th>
+                        <th>{{ all_time_entries|sum(attribute='hours_worked') }}</th>
+                        <td colspan="3"></td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+              </div>
+            </div>
+          {% else %}
+            <div class="alert alert-info">
+              No time entries found for this project. <a href="/time-entries/new?project={{ project.project_uuid }}">Log your first time entry</a>
+            </div>
+          {% endif %}
         </div>
-      {% endif %}
+      </div>
     </div>
   </div>
 </div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const tabButtons = document.querySelectorAll('#timeEntryTabs button[data-bs-toggle="tab"]');
+    const tabPanes = document.querySelectorAll('.tab-pane');
+
+    tabButtons.forEach(button => {
+      button.addEventListener('click', function(e) {
+        e.preventDefault();
+        
+        // Remove active class from all buttons
+        tabButtons.forEach(btn => btn.classList.remove('active'));
+        // Add active class to clicked button
+        this.classList.add('active');
+
+        // Hide all tab panes
+        tabPanes.forEach(pane => {
+          pane.style.display = 'none';
+        });
+
+        // Show the target tab pane
+        const targetId = this.getAttribute('data-bs-target');
+        const targetPane = document.querySelector(targetId);
+        if (targetPane) {
+          targetPane.style.display = 'block';
+        }
+      });
+    });
+  });
+</script>
 
 {% endblock %}

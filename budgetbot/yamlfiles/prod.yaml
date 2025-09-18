@@ -87,6 +87,7 @@ app:
     webapp_timeout_secs:        30
     access_control:             True
     send_emails:                False
+    pdf_storage_path:           /var/lib/budgetbot/pdfs
 
 smtp:
     host:   localhost

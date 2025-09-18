@@ -17,3 +17,4 @@ script_order:
 #-   add-removed-shopping-list-column.sql
 #-   add-journal.sql
 -   add-projects-timetracking.sql
+-   add-invoices.sql

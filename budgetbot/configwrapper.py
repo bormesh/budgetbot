@@ -86,6 +86,9 @@ class ConfigWrapper(configwrapper.ConfigWrapper):
     def prod_mode(self):
         return self.config_dictionary["app"].get("prod_mode", False)
 
+    @property
+    def pdf_storage_path(self):
+        return self.config_dictionary["app"].get("pdf_storage_path", "/tmp/budgetbot/pdfs")
 
     @property
     def webapp_timeout_secs(self):

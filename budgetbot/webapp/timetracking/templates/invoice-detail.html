@@ -1,0 +1,179 @@
+{% extends "budgetbot/base.html" %}
+
+{% block title %}Invoice: {{ invoice.invoice_number or 'No Number' }}{% endblock %}
+
+{% block main %}
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-12">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="/invoices">Invoices</a></li>
+          <li class="breadcrumb-item active">Invoice {{ invoice.invoice_number or 'No Number' }}</li>
+        </ol>
+      </nav>
+
+      <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h3>Invoice {% if invoice.invoice_number %}#{{ invoice.invoice_number }}{% else %}(No Number){% endif %}</h3>
+          <span class="badge bg-{{ 'secondary' if invoice.status == 'draft' else 'primary' if invoice.status == 'sent' else 'success' if invoice.status == 'paid' else 'secondary' }} fs-6">
+            {{ invoice.status|capitalize }}
+          </span>
+        </div>
+        <div class="card-body">
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <h5>Client Information</h5>
+              <p><strong>{{ invoice.client_name }}</strong></p>
+              <p>{{ invoice.client_address|replace('\n', '<br>')|safe if invoice.client_address else 'No address provided' }}</p>
+            </div>
+            <div class="col-md-6">
+              <h5>Invoice Details</h5>
+              <table class="table table-sm">
+                <tr>
+                  <th>Project:</th>
+                  <td><a href="/projects/{{ invoice.project_uuid }}">{{ invoice.project_title }}</a></td>
+                </tr>
+                <tr>
+                  <th>Invoice Date:</th>
+                  <td>{{ invoice.invoice_date.strftime('%Y-%m-%d') if invoice.invoice_date else 'Not set' }}</td>
+                </tr>
+                <tr>
+                  <th>Due Date:</th>
+                  <td>{{ invoice.due_date.strftime('%Y-%m-%d') if invoice.due_date else 'Not set' }}</td>
+                </tr>
+                {% if invoice.paid_date %}
+                <tr>
+                  <th>Paid Date:</th>
+                  <td>{{ invoice.paid_date.strftime('%Y-%m-%d') }}</td>
+                </tr>
+                {% endif %}
+                <tr>
+                  <th>Total Amount:</th>
+                  <td>${{ "%.2f"|format(invoice.total_amount) }}</td>
+                </tr>
+              </table>
+            </div>
+          </div>
+
+          {% if invoice.notes %}
+          <div class="row mb-3">
+            <div class="col-md-12">
+              <h5>Notes</h5>
+              <p>{{ invoice.notes|replace('\n', '<br>')|safe }}</p>
+            </div>
+          </div>
+          {% endif %}
+
+          {% if pdf_url %}
+          <div class="row mb-3">
+            <div class="col-md-12">
+              <h5>PDF Invoice</h5>
+              <p><a href="{{ pdf_url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                <i class="fa fa-file-pdf"></i> View PDF Invoice
+              </a></p>
+            </div>
+          </div>
+          {% endif %}
+
+          <div class="row mb-3">
+            <div class="col-md-12">
+              <div class="btn-group">
+                <a href="/invoices/{{ invoice.invoice_uuid }}/edit" class="btn btn-warning">
+                  <i class="fa fa-edit"></i> Edit Invoice
+                </a>
+                {% if invoice.status != 'paid' %}
+                <button type="button" id="markAsPaidBtn" class="btn btn-success">
+                  <i class="fa fa-check"></i> Mark as Paid
+                </button>
+                {% endif %}
+                <a href="/projects/{{ invoice.project_uuid }}" class="btn btn-info">
+                  <i class="fa fa-project-diagram"></i> View Project
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mb-4">
+        <div class="card-header">
+          <h4>Time Entries</h4>
+        </div>
+        <div class="card-body">
+          {% if time_entries %}
+            <div class="table-responsive">
+              <table class="table table-striped">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Person</th>
+                    <th>Hours</th>
+                    <th>Description</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for entry in time_entries %}
+                    <tr data-time-entry-uuid="{{ entry.time_entry_uuid }}">
+                      <td>{{ entry.entry_date.strftime('%Y-%m-%d') }}</td>
+                      <td>{{ entry.person_name }}</td>
+                      <td>{{ entry.hours_worked }}</td>
+                      <td>{{ entry.description or '' }}</td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <th colspan="2" class="text-end">Total Hours:</th>
+                    <th>{{ time_entries|sum(attribute='hours_worked') }}</th>
+                    <td></td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          {% else %}
+            <div class="alert alert-info">
+              No time entries attached to this invoice.
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const markAsPaidBtn = document.getElementById('markAsPaidBtn');
+    if (markAsPaidBtn) {
+      markAsPaidBtn.addEventListener('click', function() {
+        if (confirm('Mark this invoice as paid?')) {
+          const today = new Date().toISOString().split('T')[0];
+          
+          fetch('/api/invoices/{{ invoice.invoice_uuid }}/mark-paid', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ paid_date: today })
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              window.location.reload();
+            } else {
+              alert(`Error: ${data.message}`);
+            }
+          })
+          .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while marking the invoice as paid');
+          });
+        }
+      });
+    }
+  });
+</script>
+
+{% endblock %}

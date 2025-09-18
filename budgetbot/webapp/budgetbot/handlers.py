@@ -173,7 +173,6 @@ class AllExpenses(Handler):
         expense_categories = expenses.\
             ExpenseCategories.get_all(self.cw.get_pgconn())
 
-        """
 
         if req.user and (req.user.email_address == 'rob@216software.com' or\
             req.user.email_address == 'Debby.heinen@gmail.com'):
@@ -182,10 +181,8 @@ class AllExpenses(Handler):
                 reply_timestamp=datetime.datetime.now(),
                 success=True,
                 expense_categories=expense_categories,
-                expense_categories=expense_categories,
                 message="People and categories"))
 
-        """
 
 
 class GetTodayJournalEntry(Handler):
