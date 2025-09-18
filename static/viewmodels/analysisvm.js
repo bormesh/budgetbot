@@ -18,23 +18,20 @@ function AnalysisViewModel(data){
     self.get_data_to_analyze = async () => {
         // do our fetch here
         //
-        const response = fetch('/api/expenses',
+        fetch('/api/expenses',
           {
             credentials : "same-origin",
             headers: { 'Accept': 'application/json'}
-          });
-
-        if(response.ok){
-            data = await resonse.json()
-
-            if(data.success){
-                //process our data here
-                console.log(data);
-            }
-        }else{
-
-            console.log("Fetch was not successful");
-        }
+          }).then((response) => response.json())
+            .then((data) =>{
+                if(data.success){
+                    //process our data here
+                    console.log(data);
+                }
+                else{
+                    console.log("Fetch was not successful");
+                }
+            })
 
     }
 
